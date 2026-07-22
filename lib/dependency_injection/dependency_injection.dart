@@ -40,7 +40,6 @@ Future<void> setup() async {
   getIt.registerLazySingleton<Dio>(
     () => Dio(
       BaseOptions(
-        baseUrl: 'https://api-6k4wrfnuca-uc.a.run.app',
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
       ),
