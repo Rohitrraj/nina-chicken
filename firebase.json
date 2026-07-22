@@ -1,1 +1,17 @@
-{"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"nina-chicken-rohitraj-mpti","configurations":{"web":"1:150255411735:web:b160f575e86276aafe7252"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "nina-chicken-rohitraj-mpti",
+          "configurations": {
+            "web": "1:150255411735:web:b160f575e86276aafe7252"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}
