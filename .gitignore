@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+node_modules/
+.env.local
+.env.*.local
+.vercel/
+firebase-adminsdk-*.json
+*service-account*.json
+.vercel
