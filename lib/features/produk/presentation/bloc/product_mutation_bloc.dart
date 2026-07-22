@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 
@@ -129,10 +128,9 @@ class ProductMutationBloc
 
     try {
       await cloudinaryImageDatasource.deleteProductImage(uploadResult.publicId);
-    } catch (error) {
-      debugPrint('Cloudinary rollback gagal: $error');
-
-      // Rollback tidak boleh menutupi error utama.
+    } catch (_) {
+      // Kegagalan rollback tidak boleh
+      // menutupi error mutation utama.
     }
   }
 
@@ -149,16 +147,6 @@ class ProductMutationBloc
         .where((publicId) => publicId.isNotEmpty)
         .toSet();
 
-    debugPrint(
-      'Cloudinary cleanup candidates: '
-      '$normalizedIds',
-    );
-
-    debugPrint(
-      'Cloudinary excluded public ID: '
-      '$normalizedExcludedPublicId',
-    );
-
     for (final publicId in normalizedIds) {
       if (publicId == normalizedExcludedPublicId) {
         continue;
@@ -166,18 +154,8 @@ class ProductMutationBloc
 
       try {
         await cloudinaryImageDatasource.deleteProductImage(publicId);
-
-        debugPrint(
-          'Cloudinary cleanup success: '
-          '$publicId',
-        );
-      } catch (error) {
+      } catch (_) {
         allDeleted = false;
-
-        debugPrint(
-          'Cloudinary cleanup failed: '
-          '$publicId — $error',
-        );
       }
     }
 

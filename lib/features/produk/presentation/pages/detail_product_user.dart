@@ -35,7 +35,11 @@ class DetailProductUserPage extends StatelessWidget {
                   const SizedBox(width: 16),
                   Text(
                     "Detail Produk",
-                    style: isDesktop ? theme.textTheme.displayMedium : theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: isDesktop
+                        ? theme.textTheme.displayMedium
+                        : theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                   ),
                 ],
               ),
@@ -47,17 +51,11 @@ class DetailProductUserPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Left: Image Gallery
-                        Expanded(
-                          flex: 5,
-                          child: _buildImageSection(theme),
-                        ),
+                        Expanded(flex: 5, child: _buildImageSection(theme)),
                         const SizedBox(width: 40),
 
                         // Right: Product Info
-                        Expanded(
-                          flex: 5,
-                          child: _buildInfoSection(theme),
-                        ),
+                        Expanded(flex: 5, child: _buildInfoSection(theme)),
                       ],
                     )
                   : Column(
@@ -95,7 +93,8 @@ class DetailProductUserPage extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
-            child: product.imageUrl.isNotEmpty &&
+            child:
+                product.imageUrl.isNotEmpty &&
                     product.imageUrl.first.startsWith('http')
                 ? Image.network(
                     product.imageUrl.first,
@@ -115,7 +114,7 @@ class DetailProductUserPage extends StatelessWidget {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: product.imageUrl.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              separatorBuilder: (_, _) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
                 return Container(
                   width: 80,

@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:logger/web.dart';
 import '../../../../dependency_injection/dependency_injection.dart';
 import '../../domain/entities/product.dart';
 import '../bloc/product_catalog_bloc.dart';
@@ -68,9 +67,6 @@ class _ProductMutationPageState extends State<ProductMutationPage> {
 
   @override
   Widget build(BuildContext context) {
-    Logger().i(
-      "Building ProductMutationPage with productId: ${widget.product?.id}",
-    );
     final bool isUpdate = widget.product != null;
 
     return BlocProvider(
