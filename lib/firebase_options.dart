@@ -21,9 +21,15 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return android;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for android - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.iOS:
-        return ios;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for ios - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -47,29 +53,11 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDzaHVSFL6zkkaump0AM1llBdnHLLiu5Kc',
-    appId: '1:925519887542:web:79e1f56909db8420d1fa17',
-    messagingSenderId: '925519887542',
-    projectId: 'ayam-nina',
-    authDomain: 'ayam-nina.firebaseapp.com',
-    storageBucket: 'ayam-nina.firebasestorage.app',
-    measurementId: 'G-67BYC8T5Q6',
-  );
-
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAJt_LDVPyDfEsTERB6nNReNfvoHWttwvI',
-    appId: '1:925519887542:android:7450d7e723898e4ad1fa17',
-    messagingSenderId: '925519887542',
-    projectId: 'ayam-nina',
-    storageBucket: 'ayam-nina.firebasestorage.app',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyALmDRmudDeZidR3xQqjNzTQJewjpprr8g',
-    appId: '1:925519887542:ios:737d039c9add6cd7d1fa17',
-    messagingSenderId: '925519887542',
-    projectId: 'ayam-nina',
-    storageBucket: 'ayam-nina.firebasestorage.app',
-    iosBundleId: 'com.example.kedaiAyamNina',
+    apiKey: 'AIzaSyDQQ-QBuSm1Wt68V9Gg_K88R31cYfcA4pQ',
+    appId: '1:150255411735:web:b160f575e86276aafe7252',
+    messagingSenderId: '150255411735',
+    projectId: 'nina-chicken-rohitraj-mpti',
+    authDomain: 'nina-chicken-rohitraj-mpti.firebaseapp.com',
+    storageBucket: 'nina-chicken-rohitraj-mpti.firebasestorage.app',
   );
 }

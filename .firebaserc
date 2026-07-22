@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "ayam-nina"
-  }
+    "default": "nina-chicken-rohitraj-mpti"
+  },
+  "targets": {},
+  "etags": {}
 }
