@@ -53,10 +53,7 @@ class DetailProductPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Left: Image Gallery
-                      Expanded(
-                        flex: 5,
-                        child: _buildImageSection(theme),
-                      ),
+                      Expanded(flex: 5, child: _buildImageSection(theme)),
                       const SizedBox(width: 40),
 
                       // Right: Product Info
@@ -95,7 +92,8 @@ class DetailProductPage extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
-            child: product.imageUrl.isNotEmpty &&
+            child:
+                product.imageUrl.isNotEmpty &&
                     product.imageUrl.first.startsWith('http')
                 ? Image.network(
                     product.imageUrl.first,
@@ -368,7 +366,7 @@ class DetailProductPage extends StatelessWidget {
                                 Navigator.pop(dialogCtx);
                                 // Pakai ProductCatalogBloc singleton — sudah auto-reload setelah delete
                                 getIt<ProductCatalogBloc>().add(
-                                  DeleteProductEvent(product.id),
+                                  DeleteProductEvent(product),
                                 );
                               },
                               child: const Text(
@@ -386,7 +384,9 @@ class DetailProductPage extends StatelessWidget {
                       foregroundColor: Colors.red.shade600,
                       side: BorderSide(color: Colors.red.shade300),
                       padding: const EdgeInsets.symmetric(
-                          vertical: 16, horizontal: 24),
+                        vertical: 16,
+                        horizontal: 24,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

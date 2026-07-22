@@ -96,7 +96,11 @@ Future<void> setup() async {
   );
 
   getIt.registerLazySingleton<ProductCatalogBloc>(
-    () => ProductCatalogBloc(getProducts: getIt(), deleteProduct: getIt()),
+    () => ProductCatalogBloc(
+      getProducts: getIt(),
+      deleteProduct: getIt(),
+      cloudinaryImageDatasource: getIt(),
+    ),
   );
 
   getIt.registerFactory<TransactionListCubit>(
@@ -107,7 +111,6 @@ Future<void> setup() async {
     () => ProductMutationBloc(
       createProduct: getIt(),
       updateProduct: getIt(),
-      deleteProduct: getIt(),
       cloudinaryImageDatasource: getIt(),
     ),
   );

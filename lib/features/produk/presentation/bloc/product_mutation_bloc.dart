@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 
@@ -5,7 +6,6 @@ import '../../data/datasources/cloudinary_image_datasource.dart';
 import '../../data/model/cloudinary_upload_result.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/usecases/create_product.dart';
-import '../../domain/usecases/delete_product.dart';
 import '../../domain/usecases/update_product.dart';
 import '../models/product_mutation_input.dart';
 
@@ -16,18 +16,15 @@ class ProductMutationBloc
     extends Bloc<ProductMutationEvent, ProductMutationState> {
   final CreateProduct createProduct;
   final UpdateProduct updateProduct;
-  final DeleteProduct deleteProduct;
   final CloudinaryImageDatasource cloudinaryImageDatasource;
 
   ProductMutationBloc({
     required this.createProduct,
     required this.updateProduct,
-    required this.deleteProduct,
     required this.cloudinaryImageDatasource,
   }) : super(ProductMutationInitial()) {
     on<DoCreateProduct>(_onCreateProduct);
     on<DoUpdateProduct>(_onUpdateProduct);
-    on<DoDeleteProduct>(_onDeleteProduct);
   }
 
   Future<void> _onCreateProduct(
@@ -59,30 +56,36 @@ class ProductMutationBloc
 
     _PreparedProduct? preparedProduct;
 
+    final previousPublicIds = List<String>.from(
+      event.input.product.imagePublicIds,
+    );
+
     try {
       preparedProduct = await _prepareProduct(event.input);
 
       await updateProduct(preparedProduct.product);
 
-      emit(ProductMutationSuccess('Product Successfully Updated!'));
+      final newUpload = preparedProduct.uploadResult;
+      var cleanupSucceeded = true;
+
+      if (newUpload != null) {
+        cleanupSucceeded = await _deleteCloudinaryImages(
+          previousPublicIds,
+          excludedPublicId: newUpload.publicId,
+        );
+      }
+
+      emit(
+        ProductMutationSuccess(
+          cleanupSucceeded
+              ? 'Product Successfully Updated!'
+              : 'Produk berhasil diperbarui, tetapi '
+                    'gambar lama gagal dibersihkan.',
+        ),
+      );
     } catch (error) {
       await _rollbackUpload(preparedProduct?.uploadResult);
 
-      emit(ProductMutationFailure(_readError(error)));
-    }
-  }
-
-  Future<void> _onDeleteProduct(
-    DoDeleteProduct event,
-    Emitter<ProductMutationState> emit,
-  ) async {
-    emit(ProductMutationLoading());
-
-    try {
-      await deleteProduct(event.id);
-
-      emit(ProductMutationSuccess('Product Successfully Deleted!'));
-    } catch (error) {
       emit(ProductMutationFailure(_readError(error)));
     }
   }
@@ -109,8 +112,8 @@ class ProductMutationBloc
       description: input.product.description,
       shortDescription: input.product.shortDescription,
       price: input.product.price,
-      imageUrl: [uploadResult.secureUrl],
-      imagePublicIds: [uploadResult.publicId],
+      imageUrl: <String>[uploadResult.secureUrl],
+      imagePublicIds: <String>[uploadResult.publicId],
     );
 
     return _PreparedProduct(
@@ -126,9 +129,59 @@ class ProductMutationBloc
 
     try {
       await cloudinaryImageDatasource.deleteProductImage(uploadResult.publicId);
-    } catch (_) {
-      // Rollback tidak boleh menutupi error utama mutation.
+    } catch (error) {
+      debugPrint('Cloudinary rollback gagal: $error');
+
+      // Rollback tidak boleh menutupi error utama.
     }
+  }
+
+  Future<bool> _deleteCloudinaryImages(
+    Iterable<String> publicIds, {
+    String? excludedPublicId,
+  }) async {
+    var allDeleted = true;
+
+    final normalizedExcludedPublicId = excludedPublicId?.trim();
+
+    final normalizedIds = publicIds
+        .map((publicId) => publicId.trim())
+        .where((publicId) => publicId.isNotEmpty)
+        .toSet();
+
+    debugPrint(
+      'Cloudinary cleanup candidates: '
+      '$normalizedIds',
+    );
+
+    debugPrint(
+      'Cloudinary excluded public ID: '
+      '$normalizedExcludedPublicId',
+    );
+
+    for (final publicId in normalizedIds) {
+      if (publicId == normalizedExcludedPublicId) {
+        continue;
+      }
+
+      try {
+        await cloudinaryImageDatasource.deleteProductImage(publicId);
+
+        debugPrint(
+          'Cloudinary cleanup success: '
+          '$publicId',
+        );
+      } catch (error) {
+        allDeleted = false;
+
+        debugPrint(
+          'Cloudinary cleanup failed: '
+          '$publicId — $error',
+        );
+      }
+    }
+
+    return allDeleted;
   }
 
   String _readError(Object error) {

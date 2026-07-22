@@ -163,7 +163,7 @@ class _ProductCatalogPageState extends State<ProductCatalogPage> {
                                       onPressed: () {
                                         Navigator.pop(dialogCtx);
                                         context.read<ProductCatalogBloc>().add(
-                                          DeleteProductEvent(product.id),
+                                          DeleteProductEvent(product),
                                         );
                                       },
                                       child: const Text(

@@ -1,12 +1,15 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+
+import '../../data/datasources/cloudinary_image_datasource.dart';
 import '../../domain/entities/product.dart';
-import '../../domain/usecases/get_products.dart';
 import '../../domain/usecases/delete_product.dart';
+import '../../domain/usecases/get_products.dart';
 
 // EVENTS
 abstract class ProductCatalogEvent extends Equatable {
   const ProductCatalogEvent();
+
   @override
   List<Object?> get props => [];
 }
@@ -14,15 +17,18 @@ abstract class ProductCatalogEvent extends Equatable {
 class LoadProducts extends ProductCatalogEvent {}
 
 class DeleteProductEvent extends ProductCatalogEvent {
-  final String productId;
-  const DeleteProductEvent(this.productId);
+  final Product product;
+
+  const DeleteProductEvent(this.product);
+
   @override
-  List<Object?> get props => [productId];
+  List<Object?> get props => <Object?>[product.id, ...product.imagePublicIds];
 }
 
 // STATES
 abstract class ProductCatalogState extends Equatable {
   const ProductCatalogState();
+
   @override
   List<Object?> get props => [];
 }
@@ -33,21 +39,27 @@ class ProductCatalogLoading extends ProductCatalogState {}
 
 class ProductCatalogLoaded extends ProductCatalogState {
   final List<Product> products;
+
   const ProductCatalogLoaded(this.products);
+
   @override
   List<Object?> get props => [products];
 }
 
 class ProductCatalogError extends ProductCatalogState {
   final String message;
+
   const ProductCatalogError(this.message);
+
   @override
   List<Object?> get props => [message];
 }
 
 class ProductCatalogActionSuccess extends ProductCatalogState {
   final String message;
+
   const ProductCatalogActionSuccess(this.message);
+
   @override
   List<Object?> get props => [message];
 }
@@ -57,9 +69,13 @@ class ProductCatalogBloc
     extends Bloc<ProductCatalogEvent, ProductCatalogState> {
   final GetProducts getProducts;
   final DeleteProduct deleteProduct;
+  final CloudinaryImageDatasource cloudinaryImageDatasource;
 
-  ProductCatalogBloc({required this.getProducts, required this.deleteProduct})
-    : super(ProductCatalogInitial()) {
+  ProductCatalogBloc({
+    required this.getProducts,
+    required this.deleteProduct,
+    required this.cloudinaryImageDatasource,
+  }) : super(ProductCatalogInitial()) {
     on<LoadProducts>(_onLoadProducts);
     on<DeleteProductEvent>(_onDeleteProduct);
   }
@@ -69,11 +85,13 @@ class ProductCatalogBloc
     Emitter<ProductCatalogState> emit,
   ) async {
     emit(ProductCatalogLoading());
+
     try {
       final products = await getProducts();
+
       emit(ProductCatalogLoaded(products));
-    } catch (e) {
-      emit(ProductCatalogError(e.toString()));
+    } catch (error) {
+      emit(ProductCatalogError(_readError(error)));
     }
   }
 
@@ -85,24 +103,57 @@ class ProductCatalogBloc
         ? List<Product>.from((state as ProductCatalogLoaded).products)
         : <Product>[];
 
+    final product = event.product;
+
     try {
-      await deleteProduct(event.productId);
+      await deleteProduct(product.id);
+
+      final cleanupSucceeded = await _deleteCloudinaryImages(
+        product.imagePublicIds,
+      );
 
       final updatedProducts = previousProducts
-          .where((product) => product.id != event.productId)
+          .where((item) => item.id != product.id)
           .toList(growable: false);
 
-      emit(const ProductCatalogActionSuccess('Product deleted successfully'));
+      emit(
+        ProductCatalogActionSuccess(
+          cleanupSucceeded
+              ? 'Product deleted successfully'
+              : 'Product deleted, but image cleanup requires review',
+        ),
+      );
 
-      // Perbarui state lokal tanpa membaca ulang seluruh collection.
       emit(ProductCatalogLoaded(updatedProducts));
     } catch (error) {
-      emit(ProductCatalogError(error.toString()));
+      emit(ProductCatalogError(_readError(error)));
 
-      // Pertahankan katalog sebelumnya ketika delete gagal.
       if (previousProducts.isNotEmpty) {
         emit(ProductCatalogLoaded(previousProducts));
       }
     }
+  }
+
+  Future<bool> _deleteCloudinaryImages(Iterable<String> publicIds) async {
+    var allDeleted = true;
+
+    final normalizedIds = publicIds
+        .map((publicId) => publicId.trim())
+        .where((publicId) => publicId.isNotEmpty)
+        .toSet();
+
+    for (final publicId in normalizedIds) {
+      try {
+        await cloudinaryImageDatasource.deleteProductImage(publicId);
+      } catch (_) {
+        allDeleted = false;
+      }
+    }
+
+    return allDeleted;
+  }
+
+  String _readError(Object error) {
+    return error.toString().replaceFirst('Exception: ', '');
   }
 }

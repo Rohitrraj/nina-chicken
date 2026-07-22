@@ -14,7 +14,12 @@ abstract class CloudinaryImageDatasource {
 class CloudinaryImageDatasourceImpl implements CloudinaryImageDatasource {
   static const int _maximumFileSize = 5 * 1024 * 1024;
 
-  static const Set<String> _allowedExtensions = {'jpg', 'jpeg', 'png', 'webp'};
+  static const Set<String> _allowedExtensions = <String>{
+    'jpg',
+    'jpeg',
+    'png',
+    'webp',
+  };
 
   final Dio dio;
   final FirebaseAuth firebaseAuth;
@@ -30,11 +35,12 @@ class CloudinaryImageDatasourceImpl implements CloudinaryImageDatasource {
       await _validateImage(image);
 
       final token = await _getFirebaseIdToken();
+
       final signature = await _requestUploadSignature(token);
 
       final bytes = await image.readAsBytes();
 
-      final formData = FormData.fromMap({
+      final formData = FormData.fromMap(<String, dynamic>{
         'file': MultipartFile.fromBytes(
           bytes,
           filename: image.name.isEmpty ? 'product-image' : image.name,
@@ -67,7 +73,9 @@ class CloudinaryImageDatasourceImpl implements CloudinaryImageDatasource {
       throw Exception(
         _readDioError(
           error,
-          fallback: 'Gagal mengunggah gambar ke Cloudinary.',
+          fallback:
+              'Gagal mengunggah gambar '
+              'ke Cloudinary.',
         ),
       );
     } on FirebaseAuthException catch (error) {
@@ -83,33 +91,57 @@ class CloudinaryImageDatasourceImpl implements CloudinaryImageDatasource {
 
   @override
   Future<void> deleteProductImage(String publicId) async {
-    if (publicId.trim().isEmpty) {
-      throw ArgumentError('Cloudinary public ID tidak boleh kosong.');
+    final normalizedPublicId = publicId.trim();
+
+    if (normalizedPublicId.isEmpty) {
+      throw ArgumentError(
+        'Cloudinary public ID '
+        'tidak boleh kosong.',
+      );
     }
 
     try {
       final token = await _getFirebaseIdToken();
 
-      await dio.post<void>(
+      final response = await dio.post<Map<String, dynamic>>(
         '${AppEnvironment.apiBaseUrl}'
         '/api/cloudinary-delete',
-        data: {'publicId': publicId.trim()},
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        data: <String, dynamic>{'publicId': normalizedPublicId},
+        options: Options(
+          headers: <String, dynamic>{'Authorization': 'Bearer $token'},
+        ),
       );
+
+      final result = response.data?['result'];
+
+      if (result != 'ok' && result != 'not found') {
+        throw Exception(
+          'Cloudinary gagal menghapus '
+          'gambar $normalizedPublicId. '
+          'Result: $result',
+        );
+      }
     } on DioException catch (error) {
       throw Exception(
-        _readDioError(error, fallback: 'Gagal menghapus gambar Cloudinary.'),
+        _readDioError(
+          error,
+          fallback:
+              'Gagal menghapus gambar '
+              'Cloudinary.',
+        ),
       );
     }
   }
 
   Future<void> _validateImage(XFile image) async {
     final fileName = image.name.toLowerCase();
+
     final extension = fileName.contains('.') ? fileName.split('.').last : '';
 
     if (!_allowedExtensions.contains(extension)) {
       throw const FormatException(
-        'Format gambar harus JPG, JPEG, PNG, atau WEBP.',
+        'Format gambar harus JPG, JPEG, '
+        'PNG, atau WEBP.',
       );
     }
 
@@ -117,7 +149,8 @@ class CloudinaryImageDatasourceImpl implements CloudinaryImageDatasource {
 
     if (fileSize <= 0) {
       throw const FormatException(
-        'File gambar kosong atau tidak dapat dibaca.',
+        'File gambar kosong atau '
+        'tidak dapat dibaca.',
       );
     }
 
@@ -152,7 +185,9 @@ class CloudinaryImageDatasourceImpl implements CloudinaryImageDatasource {
     final response = await dio.post<Map<String, dynamic>>(
       '${AppEnvironment.apiBaseUrl}'
       '/api/cloudinary-signature',
-      options: Options(headers: {'Authorization': 'Bearer $token'}),
+      options: Options(
+        headers: <String, dynamic>{'Authorization': 'Bearer $token'},
+      ),
     );
 
     final data = response.data;
@@ -218,7 +253,10 @@ class _CloudinarySignature {
         timestamp is! num ||
         assetFolder is! String ||
         publicIdPrefix is! String) {
-      throw const FormatException('Respons signature Cloudinary tidak valid.');
+      throw const FormatException(
+        'Respons signature Cloudinary '
+        'tidak valid.',
+      );
     }
 
     return _CloudinarySignature(

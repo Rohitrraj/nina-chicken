@@ -14,9 +14,3 @@ class DoUpdateProduct extends ProductMutationEvent {
 
   DoUpdateProduct(this.input);
 }
-
-class DoDeleteProduct extends ProductMutationEvent {
-  final String id;
-
-  DoDeleteProduct(this.id);
-}
