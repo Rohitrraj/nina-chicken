@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kedai_ayam_nina/features/auth/data/datasources/auth_network_datasource.dart';
 import 'package:kedai_ayam_nina/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:kedai_ayam_nina/features/auth/domain/repositories/auth_repository.dart';
@@ -32,6 +33,9 @@ final GetIt getIt = GetIt.instance;
 Future<void> setup() async {
   // === EXTERNAL ===
   getIt.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
+  getIt.registerLazySingleton<FirebaseFirestore>(
+    () => FirebaseFirestore.instance,
+  );
   getIt.registerLazySingleton<Dio>(
     () => Dio(
       BaseOptions(
