@@ -50,3 +50,4 @@ node_modules/
 firebase-adminsdk-*.json
 *service-account*.json
 .vercel
+firebase-admin.json
