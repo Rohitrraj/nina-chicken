@@ -10,6 +10,7 @@ import 'package:kedai_ayam_nina/features/auth/domain/usecases/watch_auth.dart';
 import 'package:kedai_ayam_nina/features/auth/presentations/bloc/auth_bloc.dart';
 import 'package:kedai_ayam_nina/features/produk/presentation/bloc/product_mutation_bloc.dart';
 import 'package:kedai_ayam_nina/features/produk/presentation/bloc/product_catalog_bloc.dart';
+import 'package:kedai_ayam_nina/features/produk/data/datasources/product_firestore_datasource.dart';
 import 'package:kedai_ayam_nina/features/produk/data/datasources/product_network_datasource.dart';
 import 'package:kedai_ayam_nina/features/produk/data/repositories/product_repository_impl.dart';
 import 'package:kedai_ayam_nina/features/produk/domain/repositories/product_repository.dart';
@@ -52,6 +53,9 @@ Future<void> setup() async {
   );
   getIt.registerLazySingleton<ProductNetworkDatasource>(
     () => ProductNetworkDatasourceImpl(dio: getIt()),
+  );
+  getIt.registerLazySingleton<ProductFirestoreDatasource>(
+    () => ProductFirestoreDatasourceImpl(firestore: getIt()),
   );
   getIt.registerLazySingleton<TransactionsNetworkDatasource>(
     () => TransactionsNetworkDatasourceImpl(dio: getIt()),

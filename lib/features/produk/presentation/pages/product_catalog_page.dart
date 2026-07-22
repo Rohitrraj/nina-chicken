@@ -5,16 +5,34 @@ import 'package:kedai_ayam_nina/core/widgets/card/card_product.dart';
 import '../../../../dependency_injection/dependency_injection.dart';
 import '../bloc/product_catalog_bloc.dart';
 
-class ProductCatalogPage extends StatelessWidget {
+class ProductCatalogPage extends StatefulWidget {
   const ProductCatalogPage({super.key});
+
+  @override
+  State<ProductCatalogPage> createState() => _ProductCatalogPageState();
+}
+
+class _ProductCatalogPageState extends State<ProductCatalogPage> {
+  late final ProductCatalogBloc _catalogBloc;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _catalogBloc = getIt<ProductCatalogBloc>();
+
+    if (_catalogBloc.state is ProductCatalogInitial) {
+      _catalogBloc.add(LoadProducts());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
-    // Pakai BlocProvider.value agar singleton tidak di-dispose saat halaman unmount
-    final catalogBloc = getIt<ProductCatalogBloc>()..add(LoadProducts());
+
+    // Singleton tidak di-dispose ketika halaman dilepas.
     return BlocProvider.value(
-      value: catalogBloc,
+      value: _catalogBloc,
       child: Scaffold(
         backgroundColor: const Color(0xFFFDFBF0),
         body: Padding(
@@ -52,7 +70,7 @@ class ProductCatalogPage extends StatelessWidget {
                       ],
                     )
                   : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           "Product Catalog",

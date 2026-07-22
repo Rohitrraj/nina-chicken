@@ -1,4 +1,4 @@
-﻿import 'package:bloc/bloc.dart';
+import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/usecases/get_products.dart';
@@ -28,19 +28,23 @@ abstract class ProductCatalogState extends Equatable {
 }
 
 class ProductCatalogInitial extends ProductCatalogState {}
+
 class ProductCatalogLoading extends ProductCatalogState {}
+
 class ProductCatalogLoaded extends ProductCatalogState {
   final List<Product> products;
   const ProductCatalogLoaded(this.products);
   @override
   List<Object?> get props => [products];
 }
+
 class ProductCatalogError extends ProductCatalogState {
   final String message;
   const ProductCatalogError(this.message);
   @override
   List<Object?> get props => [message];
 }
+
 class ProductCatalogActionSuccess extends ProductCatalogState {
   final String message;
   const ProductCatalogActionSuccess(this.message);
@@ -49,19 +53,21 @@ class ProductCatalogActionSuccess extends ProductCatalogState {
 }
 
 // BLOC
-class ProductCatalogBloc extends Bloc<ProductCatalogEvent, ProductCatalogState> {
+class ProductCatalogBloc
+    extends Bloc<ProductCatalogEvent, ProductCatalogState> {
   final GetProducts getProducts;
   final DeleteProduct deleteProduct;
 
-  ProductCatalogBloc({
-    required this.getProducts,
-    required this.deleteProduct,
-  }) : super(ProductCatalogInitial()) {
+  ProductCatalogBloc({required this.getProducts, required this.deleteProduct})
+    : super(ProductCatalogInitial()) {
     on<LoadProducts>(_onLoadProducts);
     on<DeleteProductEvent>(_onDeleteProduct);
   }
 
-  Future<void> _onLoadProducts(LoadProducts event, Emitter<ProductCatalogState> emit) async {
+  Future<void> _onLoadProducts(
+    LoadProducts event,
+    Emitter<ProductCatalogState> emit,
+  ) async {
     emit(ProductCatalogLoading());
     try {
       final products = await getProducts();
@@ -71,15 +77,32 @@ class ProductCatalogBloc extends Bloc<ProductCatalogEvent, ProductCatalogState> 
     }
   }
 
-  Future<void> _onDeleteProduct(DeleteProductEvent event, Emitter<ProductCatalogState> emit) async {
-    emit(ProductCatalogLoading());
+  Future<void> _onDeleteProduct(
+    DeleteProductEvent event,
+    Emitter<ProductCatalogState> emit,
+  ) async {
+    final previousProducts = state is ProductCatalogLoaded
+        ? List<Product>.from((state as ProductCatalogLoaded).products)
+        : <Product>[];
+
     try {
       await deleteProduct(event.productId);
-      emit(const ProductCatalogActionSuccess("Product deleted successfully"));
-      add(LoadProducts()); // Reload products
-    } catch (e) {
-      emit(ProductCatalogError(e.toString()));
-      add(LoadProducts());
+
+      final updatedProducts = previousProducts
+          .where((product) => product.id != event.productId)
+          .toList(growable: false);
+
+      emit(const ProductCatalogActionSuccess('Product deleted successfully'));
+
+      // Perbarui state lokal tanpa membaca ulang seluruh collection.
+      emit(ProductCatalogLoaded(updatedProducts));
+    } catch (error) {
+      emit(ProductCatalogError(error.toString()));
+
+      // Pertahankan katalog sebelumnya ketika delete gagal.
+      if (previousProducts.isNotEmpty) {
+        emit(ProductCatalogLoaded(previousProducts));
+      }
     }
   }
 }
