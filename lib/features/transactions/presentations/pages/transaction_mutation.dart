@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kedai_ayam_nina/core/widgets/switcher.dart';
 import 'package:kedai_ayam_nina/features/transactions/domain/entities/transaction.dart';
 import 'package:kedai_ayam_nina/features/transactions/presentations/bloc/transaction_bloc.dart';
 import 'package:kedai_ayam_nina/features/transactions/presentations/cubit/transaction_list_cubit.dart';
@@ -39,17 +38,19 @@ class _TransactionMutationState extends State<TransactionMutation> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Transaction Mutation Page",
+                        "Buku Kas",
                         style: Theme.of(context).textTheme.displayMedium,
                       ),
                       const SizedBox(height: 4),
-                      const Text("Kelola Arus kas harian untuk Dapur Ayam Nina"),
+                      const Text("Kelola arus kas harian Kedai Ayam Nina"),
                     ],
                   ),
                   IconButton.filled(
-                    onPressed: () => context.read<TransactionListCubit>().fetchTransactions(),
+                    onPressed: () => context
+                        .read<TransactionListCubit>()
+                        .fetchTransactions(),
                     icon: const Icon(Icons.refresh_rounded),
-                    tooltip: "Refresh History",
+                    tooltip: "Muat ulang riwayat",
                     style: IconButton.styleFrom(
                       backgroundColor: const Color(0xFF8B4513),
                       foregroundColor: Colors.white,
@@ -70,7 +71,8 @@ class _TransactionMutationState extends State<TransactionMutation> {
                       return const Center(child: CircularProgressIndicator());
                     }
 
-                    final isSmallScreen = MediaQuery.of(context).size.width < 800;
+                    final isSmallScreen =
+                        MediaQuery.of(context).size.width < 800;
 
                     final cardTransactionWidget = CardTransaction(
                       onSubmit: (Transaction input) {
@@ -80,27 +82,32 @@ class _TransactionMutationState extends State<TransactionMutation> {
                       },
                     );
 
-                    final listCubitWidget = BlocConsumer<
-                      TransactionListCubit,
-                      TransactionListState
-                    >(
-                      builder: (context, state) {
-                        if (state is TransactionListLoading) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-                        if (state is TransactionListError) {
-                          return Center(child: Text(state.message));
-                        }
-                        if (state is TransactionListLoaded) {
-                          if (state.transactions.isEmpty) {
+                    final listCubitWidget =
+                        BlocConsumer<
+                          TransactionListCubit,
+                          TransactionListState
+                        >(
+                          builder: (context, state) {
+                            if (state is TransactionListLoading) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                            if (state is TransactionListError) {
+                              return Center(child: Text(state.message));
+                            }
+                            if (state is TransactionListLoaded) {
+                              if (state.transactions.isEmpty) {
+                                return const Center(child: Text("No Data"));
+                              }
+                              return CardHistory(
+                                transaction: state.transactions,
+                              );
+                            }
                             return const Center(child: Text("No Data"));
-                          }
-                          return CardHistory(transaction: state.transactions);
-                        }
-                        return const Center(child: Text("No Data"));
-                      },
-                      listener: (context, state) {},
-                    );
+                          },
+                          listener: (context, state) {},
+                        );
 
                     if (isSmallScreen) {
                       return Column(

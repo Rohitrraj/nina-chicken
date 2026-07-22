@@ -7,8 +7,7 @@ import 'package:kedai_ayam_nina/features/auth/presentations/bloc/auth_bloc.dart'
 import 'package:kedai_ayam_nina/features/auth/presentations/pages/component/login_form.dart';
 
 class LoginPage extends StatefulWidget {
-  final VoidCallback? onSignUp;
-  const LoginPage({super.key, this.onSignUp});
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();

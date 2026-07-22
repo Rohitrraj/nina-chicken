@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:cross_file/cross_file.dart';
-import 'package:logger/logger.dart';
 import '../model/product_model.dart';
 import 'package:http_parser/http_parser.dart';
 

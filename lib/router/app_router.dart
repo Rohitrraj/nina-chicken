@@ -39,8 +39,7 @@ class AppRouter {
             null;
           }
         } else {
-          if (state.fullPath == MyRoute.login.path ||
-              state.fullPath == MyRoute.signup.path) {
+          if (state.fullPath == MyRoute.login.path) {
             if (bloc.state is AuthSuccess) {
               return MyRoute.adminAnalytics.path;
             } else {
@@ -48,6 +47,7 @@ class AppRouter {
             }
           }
         }
+        return null;
       },
       routes: [
         GoRoute(
@@ -87,11 +87,7 @@ class AppRouter {
                 GoRoute(
                   name: MyRoute.login.name,
                   path: MyRoute.login.path,
-                  builder: (context, state) => LoginPage(
-                    onSignUp: () {
-                      context.pushNamed(MyRoute.signup.name);
-                    },
-                  ),
+                  builder: (context, state) => const LoginPage(),
                 ),
               ],
             ),

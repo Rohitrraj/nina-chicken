@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kedai_ayam_nina/core/assets.dart';
-import 'package:kedai_ayam_nina/core/widgets/custom_button_gradient.dart';
 import 'package:kedai_ayam_nina/router/router.dart';
 
 class UserNavBar extends StatelessWidget {
   final bool isDesktop;
 
-  const UserNavBar({
-    super.key,
-    required this.isDesktop,
-  });
+  const UserNavBar({super.key, required this.isDesktop});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +22,9 @@ class UserNavBar extends StatelessWidget {
 
     return SliverAppBar(
       iconTheme: const IconThemeData(
-        color: Color(0xFF6B240C), // Contoh warna cokelat menyesuaikan teks, atau gunakan Colors.black
+        color: Color(
+          0xFF6B240C,
+        ), // Contoh warna cokelat menyesuaikan teks, atau gunakan Colors.black
       ),
       backgroundColor: const Color(0xFFFDFBF0),
       floating: true,
@@ -38,7 +36,7 @@ class UserNavBar extends StatelessWidget {
         },
         child: Row(
           children: [
-            Image.asset(Assets.logoC1,width: 64,height: 64,),
+            Image.asset(Assets.logoC1, width: 64, height: 64),
             const Text(
               "Kedai Ayam Nina",
               style: TextStyle(
@@ -56,29 +54,53 @@ class UserNavBar extends StatelessWidget {
             onPressed: () {
               context.goNamed(MyRoute.home.name);
             },
-            child: Text("Home", style: TextStyle(color: getColor(MyRoute.home.path), fontWeight: getWeight(MyRoute.home.path))),
+            child: Text(
+              "Home",
+              style: TextStyle(
+                color: getColor(MyRoute.home.path),
+                fontWeight: getWeight(MyRoute.home.path),
+              ),
+            ),
           ),
           const SizedBox(width: 8),
           TextButton(
             onPressed: () {
               context.goNamed(MyRoute.catalog.name);
             },
-            child: Text("Menu", style: TextStyle(color: getColor(MyRoute.catalog.path), fontWeight: getWeight(MyRoute.catalog.path))),
+            child: Text(
+              "Menu",
+              style: TextStyle(
+                color: getColor(MyRoute.catalog.path),
+                fontWeight: getWeight(MyRoute.catalog.path),
+              ),
+            ),
           ),
-          
+
           const SizedBox(width: 8),
           TextButton(
             onPressed: () {
               context.goNamed(MyRoute.about.name);
             },
-            child: Text("About", style: TextStyle(color: getColor(MyRoute.about.path), fontWeight: getWeight(MyRoute.about.path))),
+            child: Text(
+              "About",
+              style: TextStyle(
+                color: getColor(MyRoute.about.path),
+                fontWeight: getWeight(MyRoute.about.path),
+              ),
+            ),
           ),
           const SizedBox(width: 8),
           TextButton(
             onPressed: () {
               context.goNamed(MyRoute.contactUs.name);
             },
-            child: Text("Contact Us", style: TextStyle(color: getColor(MyRoute.contactUs.path), fontWeight: getWeight(MyRoute.contactUs.path))),
+            child: Text(
+              "Contact Us",
+              style: TextStyle(
+                color: getColor(MyRoute.contactUs.path),
+                fontWeight: getWeight(MyRoute.contactUs.path),
+              ),
+            ),
           ),
           const SizedBox(width: 16),
         ],

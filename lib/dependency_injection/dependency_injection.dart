@@ -66,7 +66,6 @@ Future<void> setup() async {
 
   // === USECASES ===
   getIt.registerLazySingleton(() => Login(getIt()));
-  getIt.registerLazySingleton(() => Register(getIt()));
   getIt.registerLazySingleton(() => Logout(getIt()));
   getIt.registerLazySingleton(() => GetProducts(getIt()));
   getIt.registerLazySingleton(() => CreateProduct(getIt()));
@@ -77,18 +76,20 @@ Future<void> setup() async {
   getIt.registerLazySingleton(() => DeleteTransaction(getIt()));
   getIt.registerLazySingleton(() => GetTransactions(getIt()));
   getIt.registerLazySingleton(() => GetAnnualGrowth(getIt()));
-  getIt.registerLazySingleton(() => WatchAuth(getIt()),);
+  getIt.registerLazySingleton(() => WatchAuth(getIt()));
 
   // === BLOC ===
   getIt.registerLazySingleton<AuthBloc>(
-    () => AuthBloc(login: getIt(), register: getIt(), logout: getIt(), watchAuth: getIt()),
+    () => AuthBloc(login: getIt(), logout: getIt(), watchAuth: getIt()),
   );
 
   getIt.registerLazySingleton<ProductCatalogBloc>(
     () => ProductCatalogBloc(getProducts: getIt(), deleteProduct: getIt()),
   );
 
-  getIt.registerFactory<TransactionListCubit>(() => TransactionListCubit(getIt()));
+  getIt.registerFactory<TransactionListCubit>(
+    () => TransactionListCubit(getIt()),
+  );
 
   getIt.registerFactory<ProductMutationBloc>(
     () => ProductMutationBloc(

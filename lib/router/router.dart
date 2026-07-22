@@ -4,7 +4,6 @@
   about("/about"),
   contactUs("/contact_us"),
   login("/login"),
-  signup("/signup"),
   detail("/detail"),
   adminDashboard("/admin/dashboard"),
   adminOrders("/admin/orders"),

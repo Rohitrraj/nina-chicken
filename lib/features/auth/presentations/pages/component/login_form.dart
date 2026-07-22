@@ -9,7 +9,8 @@ class LoginForm extends StatefulWidget {
     required this.email,
     required this.password,
     required this.isLoading,
-    required this.formKey, required this.onLogin,
+    required this.formKey,
+    required this.onLogin,
   });
   final TextEditingController email;
   final TextEditingController password;
@@ -34,16 +35,18 @@ class _LoginFormState extends State<LoginForm> {
             validator: MyValidators.notNull,
             controller: widget.email,
             prefixIcon: Icons.email,
-            label: "Email or Username",
-            hintText: "Enter your email or username",
+            label: "Email",
+            hintText: "Masukkan email",
           ),
           CustomInputField(
             validator: MyValidators.notNull,
             controller: widget.password,
             prefixIcon: Icons.lock,
             label: "Password",
-            hintText: "Enter your password",
-            suffixIcon: _obscurePassword? Icons.visibility_off : Icons.visibility,
+            hintText: "Masukkan kata sandi",
+            suffixIcon: _obscurePassword
+                ? Icons.visibility_off
+                : Icons.visibility,
             obscureText: _obscurePassword,
             onSuffixTap: () {
               setState(() {
@@ -52,7 +55,7 @@ class _LoginFormState extends State<LoginForm> {
             },
           ),
           CustomGradientButton(
-            text: "Login",
+            text: "Masuk",
             onTap: () {
               if (widget.formKey.currentState!.validate()) {
                 widget.onLogin.call();

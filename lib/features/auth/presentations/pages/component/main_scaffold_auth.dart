@@ -21,7 +21,7 @@ class MainScaffoldAuth extends StatelessWidget {
                 color: Theme.of(context).colorScheme.primary,
               ),
               Text(
-                "Back To Home",
+                "Kembali ke Beranda",
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
