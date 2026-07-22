@@ -28,6 +28,7 @@ import 'package:kedai_ayam_nina/features/transactions/domain/usecases/get_transa
 import 'package:kedai_ayam_nina/features/transactions/domain/usecases/update_transaction.dart';
 import 'package:kedai_ayam_nina/features/transactions/presentations/bloc/transaction_bloc.dart';
 import 'package:kedai_ayam_nina/features/transactions/presentations/cubit/transaction_list_cubit.dart';
+import 'package:kedai_ayam_nina/features/produk/data/datasources/cloudinary_image_datasource.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -50,6 +51,9 @@ Future<void> setup() async {
   // === DATASOURCES ===
   getIt.registerLazySingleton<AuthNetworkDatasource>(
     () => AuthNetworkDatasourceImpl(getIt()),
+  );
+  getIt.registerLazySingleton<CloudinaryImageDatasource>(
+    () => CloudinaryImageDatasourceImpl(dio: getIt(), firebaseAuth: getIt()),
   );
   getIt.registerLazySingleton<ProductNetworkDatasource>(
     () => ProductNetworkDatasourceImpl(dio: getIt()),
@@ -104,6 +108,7 @@ Future<void> setup() async {
       createProduct: getIt(),
       updateProduct: getIt(),
       deleteProduct: getIt(),
+      cloudinaryImageDatasource: getIt(),
     ),
   );
   getIt.registerFactory(

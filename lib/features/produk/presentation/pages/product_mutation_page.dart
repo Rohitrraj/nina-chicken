@@ -9,6 +9,7 @@ import '../../../../dependency_injection/dependency_injection.dart';
 import '../../domain/entities/product.dart';
 import '../bloc/product_catalog_bloc.dart';
 import '../bloc/product_mutation_bloc.dart';
+import '../models/product_mutation_input.dart';
 
 class ProductMutationPage extends StatefulWidget {
   final Product? product;
@@ -67,7 +68,9 @@ class _ProductMutationPageState extends State<ProductMutationPage> {
 
   @override
   Widget build(BuildContext context) {
-    Logger().i("Building ProductMutationPage with productId: ${widget.product?.id}");
+    Logger().i(
+      "Building ProductMutationPage with productId: ${widget.product?.id}",
+    );
     final bool isUpdate = widget.product != null;
 
     return BlocProvider(
@@ -79,12 +82,12 @@ class _ProductMutationPageState extends State<ProductMutationPage> {
           child: BlocConsumer<ProductMutationBloc, ProductMutationState>(
             listener: (context, state) {
               if (state is ProductMutationSuccess) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: const Color(0xFF2E7D32),
-                ));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: const Color(0xFF2E7D32),
+                  ),
+                );
                 // Refresh catalog singleton lalu navigate kembali
                 getIt<ProductCatalogBloc>().add(LoadProducts());
                 context.go('/admin/catalog');
@@ -131,7 +134,7 @@ class _ProductMutationPageState extends State<ProductMutationPage> {
                             children: [
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: _selectedCategory,
+                                  initialValue: _selectedCategory,
                                   decoration: InputDecoration(
                                     labelText: "Category",
                                     filled: true,
@@ -189,8 +192,7 @@ class _ProductMutationPageState extends State<ProductMutationPage> {
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide.none,
                               ),
-                              hintText:
-                                  "A brief summary of the dish...",
+                              hintText: "A brief summary of the dish...",
                             ),
                           ),
                         ],
@@ -272,40 +274,60 @@ class _ProductMutationPageState extends State<ProductMutationPage> {
                                       if (_formKey.currentState!.validate() &&
                                           _selectedCategory != null) {
                                         // Validasi gambar wajib saat create
-                                        if (!isUpdate && _imageUrlPreview.isEmpty) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                        if (!isUpdate &&
+                                            _imageUrlPreview.isEmpty) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
                                             const SnackBar(
-                                              content: Text("Gambar produk tidak boleh kosong! Silakan upload gambar terlebih dahulu."),
+                                              content: Text(
+                                                "Gambar produk tidak boleh kosong! Silakan upload gambar terlebih dahulu.",
+                                              ),
                                               backgroundColor: Colors.red,
                                             ),
                                           );
                                           return;
                                         }
-                                          final product = Product(
+                                        final existingImageUrls =
+                                            _pickedImage == null &&
+                                                _imageUrlPreview.startsWith(
+                                                  'http',
+                                                )
+                                            ? <String>[_imageUrlPreview]
+                                            : <String>[];
+
+                                        final product = Product(
                                           id: widget.product?.id ?? '',
-                                          name: _nameController.text,
+                                          name: _nameController.text.trim(),
                                           category: _selectedCategory!,
-                                          description: _descController.text,
-                                          shortDescription: _shortDescController.text,
+                                          description: _descController.text
+                                              .trim(),
+                                          shortDescription: _shortDescController
+                                              .text
+                                              .trim(),
                                           price: double.parse(
-                                            _priceController.text,
+                                            _priceController.text.trim(),
                                           ),
-                                          imageUrl:
-                                            [
-                                              _pickedImage?.path ??
-                                              _imageUrlPreview,
-                                            ]
-                                              
+                                          imageUrl: existingImageUrls,
                                         );
 
+                                        final mutationInput =
+                                            ProductMutationInput(
+                                              product: product,
+                                              selectedImage: _pickedImage,
+                                            );
+
+                                        final productMutationBloc = context
+                                            .read<ProductMutationBloc>();
+
                                         if (isUpdate) {
-                                          context
-                                              .read<ProductMutationBloc>()
-                                              .add(DoUpdateProduct(product));
+                                          productMutationBloc.add(
+                                            DoUpdateProduct(mutationInput),
+                                          );
                                         } else {
-                                          context
-                                              .read<ProductMutationBloc>()
-                                              .add(DoCreateProduct(product));
+                                          productMutationBloc.add(
+                                            DoCreateProduct(mutationInput),
+                                          );
                                         }
                                       }
                                     },
