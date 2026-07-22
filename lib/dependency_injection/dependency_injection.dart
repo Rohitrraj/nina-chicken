@@ -70,7 +70,7 @@ Future<void> setup() async {
     () => AuthRepositoryImpl(getIt()),
   );
   getIt.registerLazySingleton<ProductRepository>(
-    () => ProductRepositoryImpl(networkDatasource: getIt()),
+    () => ProductRepositoryImpl(firestoreDatasource: getIt()),
   );
   getIt.registerLazySingleton<TransactionRepository>(
     () => TransactionRepositoryImpl(networkDatasource: getIt()),

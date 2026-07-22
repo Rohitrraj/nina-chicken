@@ -13,57 +13,39 @@ abstract class ProductFirestoreDatasource {
 }
 
 class ProductFirestoreDatasourceImpl implements ProductFirestoreDatasource {
+  final CollectionReference<Map<String, dynamic>> _products;
+
   ProductFirestoreDatasourceImpl({required FirebaseFirestore firestore})
-    : _firestore = firestore;
-
-  final FirebaseFirestore _firestore;
-
-  CollectionReference<Map<String, dynamic>> get _products =>
-      _firestore.collection('products');
+    : _products = firestore.collection('products');
 
   @override
   Future<List<ProductModel>> getProducts() async {
     try {
-      // One-time read, bukan realtime listener.
       final snapshot = await _products.get();
 
-      final products = snapshot.docs
+      return snapshot.docs
           .map(
             (document) =>
                 ProductModel.fromFirestore(document.id, document.data()),
           )
           .toList(growable: false);
-
-      // Dengan 20–30 produk, sorting lokal lebih ringan dan tidak membutuhkan
-      // query/index tambahan pada Firestore.
-      products.sort(
-        (first, second) =>
-            first.name.toLowerCase().compareTo(second.name.toLowerCase()),
-      );
-
-      return products;
     } on FirebaseException catch (error) {
-      throw Exception(
-        'Gagal memuat daftar produk dari Firestore '
-        '(${error.code}): ${error.message ?? 'Unknown error'}',
-      );
+      throw Exception(error.message ?? 'Gagal mengambil data produk.');
     }
   }
 
   @override
   Future<void> createProduct(ProductModel product) async {
     try {
-      await _products.add(<String, dynamic>{
+      final document = _products.doc();
+
+      await document.set({
         ...product.toFirestore(),
-        'imagePublicIds': const <String>[],
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } on FirebaseException catch (error) {
-      throw Exception(
-        'Gagal membuat produk di Firestore '
-        '(${error.code}): ${error.message ?? 'Unknown error'}',
-      );
+      throw Exception(error.message ?? 'Gagal membuat produk.');
     }
   }
 
@@ -72,19 +54,16 @@ class ProductFirestoreDatasourceImpl implements ProductFirestoreDatasource {
     final productId = product.id.trim();
 
     if (productId.isEmpty) {
-      throw ArgumentError('Product ID tidak boleh kosong saat update.');
+      throw ArgumentError('ID produk tidak boleh kosong.');
     }
 
     try {
-      await _products.doc(productId).update(<String, dynamic>{
+      await _products.doc(productId).update({
         ...product.toFirestore(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } on FirebaseException catch (error) {
-      throw Exception(
-        'Gagal memperbarui produk di Firestore '
-        '(${error.code}): ${error.message ?? 'Unknown error'}',
-      );
+      throw Exception(error.message ?? 'Gagal memperbarui produk.');
     }
   }
 
@@ -93,16 +72,13 @@ class ProductFirestoreDatasourceImpl implements ProductFirestoreDatasource {
     final productId = id.trim();
 
     if (productId.isEmpty) {
-      throw ArgumentError('Product ID tidak boleh kosong saat delete.');
+      throw ArgumentError('ID produk tidak boleh kosong.');
     }
 
     try {
       await _products.doc(productId).delete();
     } on FirebaseException catch (error) {
-      throw Exception(
-        'Gagal menghapus produk dari Firestore '
-        '(${error.code}): ${error.message ?? 'Unknown error'}',
-      );
+      throw Exception(error.message ?? 'Gagal menghapus produk.');
     }
   }
 }

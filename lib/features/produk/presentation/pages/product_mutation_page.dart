@@ -309,6 +309,12 @@ class _ProductMutationPageState extends State<ProductMutationPage> {
                                             _priceController.text.trim(),
                                           ),
                                           imageUrl: existingImageUrls,
+                                          imagePublicIds: _pickedImage == null
+                                              ? widget
+                                                        .product
+                                                        ?.imagePublicIds ??
+                                                    const <String>[]
+                                              : const <String>[],
                                         );
 
                                         final mutationInput =

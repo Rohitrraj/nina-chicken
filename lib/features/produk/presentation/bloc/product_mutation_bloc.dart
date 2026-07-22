@@ -110,6 +110,7 @@ class ProductMutationBloc
       shortDescription: input.product.shortDescription,
       price: input.product.price,
       imageUrl: [uploadResult.secureUrl],
+      imagePublicIds: [uploadResult.publicId],
     );
 
     return _PreparedProduct(

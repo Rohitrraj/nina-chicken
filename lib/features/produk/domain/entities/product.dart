@@ -6,6 +6,7 @@ class Product {
   final String shortDescription;
   final double price;
   final List<String> imageUrl;
+  final List<String> imagePublicIds;
 
   const Product({
     required this.id,
@@ -15,5 +16,6 @@ class Product {
     required this.shortDescription,
     required this.price,
     required this.imageUrl,
+    this.imagePublicIds = const <String>[],
   });
 }

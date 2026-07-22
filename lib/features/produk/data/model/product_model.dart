@@ -14,19 +14,15 @@ class ProductModel extends Product {
     required super.shortDescription,
     required super.price,
     @JsonKey(name: 'imageUrls') required super.imageUrl,
+    @JsonKey(name: 'imagePublicIds', defaultValue: <String>[])
+    super.imagePublicIds = const <String>[],
   });
 
-  /// Mapper untuk API lama.
   factory ProductModel.fromJson(Map<String, dynamic> json) =>
       _$ProductModelFromJson(json);
 
-  /// Mapper untuk API lama.
   Map<String, dynamic> toJson() => _$ProductModelToJson(this);
 
-  /// Mapper khusus dokumen Cloud Firestore.
-  ///
-  /// Document ID Firestore digunakan sebagai Product.id sehingga field `id`
-  /// tidak perlu disimpan ulang di dalam dokumen.
   factory ProductModel.fromFirestore(
     String documentId,
     Map<String, dynamic> data,
@@ -38,14 +34,11 @@ class ProductModel extends Product {
       description: _parseString(data['description'] ?? data['longDescription']),
       shortDescription: _parseString(data['shortDescription']),
       price: _parsePrice(data['price']),
-      imageUrl: _parseImageUrls(data['imageUrls']),
+      imageUrl: _parseStringList(data['imageUrls']),
+      imagePublicIds: _parseStringList(data['imagePublicIds']),
     );
   }
 
-  /// Data inti yang disimpan di Cloud Firestore.
-  ///
-  /// createdAt dan updatedAt ditambahkan oleh datasource menggunakan
-  /// FieldValue.serverTimestamp().
   Map<String, dynamic> toFirestore() {
     return <String, dynamic>{
       'name': name.trim(),
@@ -54,6 +47,7 @@ class ProductModel extends Product {
       'shortDescription': shortDescription.trim(),
       'price': price,
       'imageUrls': List<String>.from(imageUrl),
+      'imagePublicIds': List<String>.from(imagePublicIds),
     };
   }
 
@@ -66,15 +60,12 @@ class ProductModel extends Product {
       shortDescription: product.shortDescription,
       price: product.price,
       imageUrl: product.imageUrl,
+      imagePublicIds: product.imagePublicIds,
     );
   }
 
   static String _parseString(dynamic value) {
-    if (value == null) {
-      return '';
-    }
-
-    return value.toString().trim();
+    return value?.toString().trim() ?? '';
   }
 
   static double _parsePrice(dynamic value) {
@@ -89,16 +80,15 @@ class ProductModel extends Product {
     return 0;
   }
 
-  static List<String> _parseImageUrls(dynamic value) {
+  static List<String> _parseStringList(dynamic value) {
     if (value is List) {
       return value
           .whereType<String>()
-          .map((url) => url.trim())
-          .where((url) => url.isNotEmpty)
+          .map((item) => item.trim())
+          .where((item) => item.isNotEmpty)
           .toList(growable: false);
     }
 
-    // Fallback untuk data lama yang mungkin menyimpan satu URL sebagai string.
     if (value is String && value.trim().isNotEmpty) {
       return <String>[value.trim()];
     }

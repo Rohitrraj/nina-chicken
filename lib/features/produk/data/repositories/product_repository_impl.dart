@@ -1,36 +1,30 @@
-import 'package:logger/web.dart';
-
 import '../../domain/entities/product.dart';
 import '../../domain/repositories/product_repository.dart';
-import '../datasources/product_network_datasource.dart';
+import '../datasources/product_firestore_datasource.dart';
 import '../model/product_model.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
-  final ProductNetworkDatasource networkDatasource;
+  final ProductFirestoreDatasource firestoreDatasource;
 
-  ProductRepositoryImpl({required this.networkDatasource});
+  ProductRepositoryImpl({required this.firestoreDatasource});
 
   @override
   Future<List<Product>> getProducts() async {
-    final result = await networkDatasource.getProducts();
-    Logger().i('Fetched products: ${result} items');
-    return result; 
+    return firestoreDatasource.getProducts();
   }
 
   @override
   Future<void> createProduct(Product product) async {
-    final productModel = ProductModel.fromEntity(product);
-    await networkDatasource.createProduct(productModel);
+    await firestoreDatasource.createProduct(ProductModel.fromEntity(product));
   }
 
   @override
   Future<void> updateProduct(Product product) async {
-    final productModel = ProductModel.fromEntity(product);
-    await networkDatasource.updateProduct(productModel);
+    await firestoreDatasource.updateProduct(ProductModel.fromEntity(product));
   }
 
   @override
   Future<void> deleteProduct(String id) async {
-    await networkDatasource.deleteProduct(id);
+    await firestoreDatasource.deleteProduct(id);
   }
 }
