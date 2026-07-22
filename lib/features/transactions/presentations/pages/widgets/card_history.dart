@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:kedai_ayam_nina/core/utils/rupiah_formatter.dart';
 import 'package:kedai_ayam_nina/core/widgets/card/card_gradient.dart';
 import 'package:kedai_ayam_nina/core/widgets/chip/custom_chip.dart';
 import 'package:kedai_ayam_nina/features/transactions/domain/entities/transaction.dart';
 import 'package:kedai_ayam_nina/features/transactions/presentations/pages/widgets/card_history_item.dart';
-import 'package:kedai_ayam_nina/router/router.dart';
 import 'package:kedai_ayam_nina/core/widgets/main_scaffold_admin.dart';
 
 class CardHistory extends StatelessWidget {
@@ -29,7 +27,7 @@ class CardHistory extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "History Transaksi",
+                      "Riwayat Transaksi",
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     TextButton(

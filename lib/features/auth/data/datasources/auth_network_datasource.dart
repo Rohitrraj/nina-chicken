@@ -1,9 +1,8 @@
-﻿import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
 
 abstract class AuthNetworkDatasource {
   Future<UserModel> login(String email, String password);
-  Future<UserModel> register(String email, String password, String name);
   Stream<User?> watchAuth();
   Future<void> logout();
   Future<UserModel?> getCurrentUser();
@@ -28,27 +27,6 @@ class AuthNetworkDatasourceImpl implements AuthNetworkDatasource {
   }
 
   @override
-  Future<UserModel> register(String email, String password, String name) async {
-    try {
-      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      
-      // Update display name
-      await userCredential.user?.updateDisplayName(name);
-      
-      // Re-fetch user so displayName is populated
-      await _firebaseAuth.currentUser?.reload();
-      final updatedUser = _firebaseAuth.currentUser;
-      
-      return UserModel.fromFirebaseUser(updatedUser!);
-    } on FirebaseAuthException catch (e) {
-      throw _mapAuthException(e);
-    }
-  }
-
-  @override
   Future<void> logout() async {
     await _firebaseAuth.signOut();
   }
@@ -61,7 +39,7 @@ class AuthNetworkDatasourceImpl implements AuthNetworkDatasource {
     }
     return null;
   }
-  
+
   Exception _mapAuthException(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':
@@ -78,7 +56,7 @@ class AuthNetworkDatasourceImpl implements AuthNetworkDatasource {
         return Exception(e.message ?? 'An unknown error occurred.');
     }
   }
-  
+
   @override
   Stream<User?> watchAuth() {
     return _firebaseAuth.authStateChanges();

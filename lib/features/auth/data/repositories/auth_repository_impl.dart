@@ -1,4 +1,4 @@
-﻿import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -15,15 +15,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<UserEntity> register(String email, String password, String name) async {
-    return await networkDatasource.register(email, password, name);
-  }
-
-  @override
   Future<void> logout() async {
     return await networkDatasource.logout();
   }
-  
+
   @override
   Future<UserEntity?> getCurrentUser() async {
     return await networkDatasource.getCurrentUser();

@@ -13,7 +13,8 @@ class AdminShellProvider extends InheritedWidget {
   });
 
   static StatefulNavigationShell of(BuildContext context) {
-    final provider = context.dependOnInheritedWidgetOfExactType<AdminShellProvider>();
+    final provider = context
+        .dependOnInheritedWidgetOfExactType<AdminShellProvider>();
     if (provider == null) {
       throw Exception('AdminShellProvider not found in context');
     }
@@ -22,7 +23,8 @@ class AdminShellProvider extends InheritedWidget {
 
   @override
   bool updateShouldNotify(AdminShellProvider oldWidget) {
-    return navigationShell.currentIndex != oldWidget.navigationShell.currentIndex;
+    return navigationShell.currentIndex !=
+        oldWidget.navigationShell.currentIndex;
   }
 }
 
@@ -86,13 +88,18 @@ class MainScaffoldAdmin extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Nina's Kitchen",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF8B4513))),
-              Text("Admin Terminal",
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
+              Text(
+                "Nina's Kitchen",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF8B4513),
+                ),
+              ),
+              Text(
+                "Admin Terminal",
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
             ],
           ),
         ),
@@ -110,7 +117,7 @@ class MainScaffoldAdmin extends StatelessWidget {
         ),
         _SidebarItem(
           icon: Icons.receipt_long,
-          label: "Order Management",
+          label: "Buku Kas",
           isSelected: navigationShell.currentIndex == 2,
           onTap: () => _handleItemTap(2, context, isFromDrawer),
         ),
@@ -123,26 +130,28 @@ class MainScaffoldAdmin extends StatelessWidget {
         const Spacer(),
         const Divider(),
         _SidebarItem(
-            icon: Icons.logout,
-            label: "Logout",
-            isSelected: false,
-            onTap: () {
-              context.read<AuthBloc>().add(AuthLogout());
-            }),
+          icon: Icons.logout,
+          label: "Logout",
+          isSelected: false,
+          onTap: () {
+            context.read<AuthBloc>().add(AuthLogout());
+          },
+        ),
         const SizedBox(height: 16),
       ],
     );
   }
 
   void _handleItemTap(int index, BuildContext context, bool isFromDrawer) {
-    navigationShell.goBranch(index,
-        initialLocation: index == navigationShell.currentIndex);
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
+    );
     if (isFromDrawer) {
       Navigator.of(context).pop();
     }
   }
 }
-
 
 class _SidebarItem extends StatefulWidget {
   final IconData icon;
@@ -168,21 +177,21 @@ class _SidebarItemState extends State<_SidebarItem> {
   @override
   Widget build(BuildContext context) {
     // Menggunakan warna cokelat primary dari tema kamu
-    const primaryColor = Color(0xFF8B4513); 
+    const primaryColor = Color(0xFF8B4513);
 
     // Logika warna background (Animasi Hover)
     final bgColor = widget.isSelected
         ? primaryColor.withOpacity(0.15) // Warna saat menu aktif
         : isHovered
-            ? primaryColor.withOpacity(0.05) // Warna samar saat di-hover
-            : Colors.transparent; // Transparan saat diam
+        ? primaryColor.withOpacity(0.05) // Warna samar saat di-hover
+        : Colors.transparent; // Transparan saat diam
 
     // Logika warna ikon & teks
     final contentColor = widget.isSelected
         ? primaryColor
         : isHovered
-            ? primaryColor.withOpacity(0.8)
-            : Colors.grey.shade700;
+        ? primaryColor.withOpacity(0.8)
+        : Colors.grey.shade700;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -199,7 +208,9 @@ class _SidebarItemState extends State<_SidebarItem> {
               widget.onTap.call();
             },
             borderRadius: BorderRadius.circular(12),
-            splashColor: primaryColor.withOpacity(0.2), // Warna cipratan saat diklik
+            splashColor: primaryColor.withOpacity(
+              0.2,
+            ), // Warna cipratan saat diklik
             highlightColor: Colors.transparent,
             child: AnimatedContainer(
               // Durasi animasi background saat di-hover
@@ -212,11 +223,7 @@ class _SidebarItemState extends State<_SidebarItem> {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    widget.icon, 
-                    color: contentColor, 
-                    size: 22,
-                  ),
+                  Icon(widget.icon, color: contentColor, size: 22),
                   const SizedBox(width: 16),
                   Text(
                     widget.label,
@@ -224,7 +231,9 @@ class _SidebarItemState extends State<_SidebarItem> {
                       color: contentColor,
                       fontSize: 14,
                       // Font lebih tebal sedikit kalau sedang dipilih
-                      fontWeight: widget.isSelected ? FontWeight.bold : FontWeight.w500,
+                      fontWeight: widget.isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                     ),
                   ),
                 ],
