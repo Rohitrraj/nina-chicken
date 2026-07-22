@@ -20,13 +20,151 @@ service cloud.firestore {
         ).data.isActive == true;
     }
 
+    function isNonEmptyString(value, maximumLength) {
+      return value is string
+        && value.size() > 0
+        && value.size() <= maximumLength;
+    }
+
+    function isStringListUpToTen(value) {
+      return value is list
+        && value.size() <= 10
+        && (value.size() < 1 || value[0] is string)
+        && (value.size() < 2 || value[1] is string)
+        && (value.size() < 3 || value[2] is string)
+        && (value.size() < 4 || value[3] is string)
+        && (value.size() < 5 || value[4] is string)
+        && (value.size() < 6 || value[5] is string)
+        && (value.size() < 7 || value[6] is string)
+        && (value.size() < 8 || value[7] is string)
+        && (value.size() < 9 || value[8] is string)
+        && (value.size() < 10 || value[9] is string);
+    }
+
+    function hasValidProductFields(data) {
+      return data.keys().hasAll([
+          'name',
+          'category',
+          'description',
+          'shortDescription',
+          'price',
+          'imageUrls',
+          'imagePublicIds',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'name',
+          'category',
+          'description',
+          'shortDescription',
+          'price',
+          'imageUrls',
+          'imagePublicIds',
+          'createdAt',
+          'updatedAt'
+        ])
+        && isNonEmptyString(data.name, 120)
+        && isNonEmptyString(data.category, 60)
+        && isNonEmptyString(data.description, 5000)
+        && isNonEmptyString(data.shortDescription, 500)
+        && (data.price is int || data.price is float)
+        && data.price > 0
+        && data.price <= 1000000000
+        && isStringListUpToTen(data.imageUrls)
+        && isStringListUpToTen(data.imagePublicIds)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidProductCreate() {
+      return hasValidProductFields(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    function isValidProductUpdate() {
+      return hasValidProductFields(request.resource.data)
+        && request.resource.data.createdAt
+          == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    function hasValidTransactionFields(data) {
+      return data.keys().hasAll([
+          'tanggal',
+          'jenis',
+          'kategori',
+          'nominal',
+          'keterangan',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'tanggal',
+          'jenis',
+          'kategori',
+          'nominal',
+          'keterangan',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.tanggal is timestamp
+        && data.jenis in [
+          'pemasukan',
+          'pengeluaran'
+        ]
+        && data.kategori in [
+          'penjualanLangsung',
+          'bahanbaku',
+          'operasional',
+          'pesananKatering',
+          'lainnya',
+          'bumbu'
+        ]
+        && data.nominal is int
+        && data.nominal > 0
+        && data.nominal <= 1000000000000
+        && isNonEmptyString(data.keterangan, 1000)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidTransactionCreate() {
+      return hasValidTransactionFields(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    function isValidTransactionUpdate() {
+      return hasValidTransactionFields(request.resource.data)
+        && request.resource.data.createdAt
+          == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+    }
+
     match /products/{productId} {
       allow read: if true;
-      allow create, update, delete: if isActiveAdmin();
+
+      allow create: if isActiveAdmin()
+        && isValidProductCreate();
+
+      allow update: if isActiveAdmin()
+        && isValidProductUpdate();
+
+      allow delete: if isActiveAdmin();
     }
 
     match /transactions/{transactionId} {
-      allow read, create, update, delete: if isActiveAdmin();
+      allow read: if isActiveAdmin();
+
+      allow create: if isActiveAdmin()
+        && isValidTransactionCreate();
+
+      allow update: if isActiveAdmin()
+        && isValidTransactionUpdate();
+
+      allow delete: if isActiveAdmin();
     }
 
     match /admins/{adminId} {
