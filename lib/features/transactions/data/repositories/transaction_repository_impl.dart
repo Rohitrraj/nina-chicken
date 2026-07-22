@@ -1,50 +1,45 @@
-import 'package:logger/web.dart';
-
-import '../../domain/entities/transaction.dart';
 import '../../domain/entities/annual_growth.dart';
+import '../../domain/entities/transaction.dart';
 import '../../domain/repositories/transaction_repository.dart';
-import '../datasource/transactions_network_datasource.dart';
+import '../datasource/transaction_firestore_datasource.dart';
 import '../model/transaction_model.dart';
 
 class TransactionRepositoryImpl implements TransactionRepository {
-  final TransactionsNetworkDatasource networkDatasource;
+  final TransactionFirestoreDatasource firestoreDatasource;
 
-  TransactionRepositoryImpl({required this.networkDatasource});
+  TransactionRepositoryImpl({required this.firestoreDatasource});
 
   @override
-  Future<List<Transaction>> getTransactions() async {
-    final result = await networkDatasource.getTransactions();
-    Logger().i('Fetched transactions: ${result.length} items');
-    return result;
+  Future<List<Transaction>> getTransactions() {
+    return firestoreDatasource.getTransactions();
   }
 
   @override
-  Future<Transaction> getTransaction(String id) async {
-    final result = await networkDatasource.getTransaction(id);
-    return result;
+  Future<Transaction> getTransaction(String id) {
+    return firestoreDatasource.getTransaction(id);
   }
 
   @override
-  Future<void> createTransaction(Transaction transaction) async {
-    final transactionModel = TransactionModel.fromEntity(transaction);
-    await networkDatasource.createTransaction(transactionModel);
+  Future<void> createTransaction(Transaction transaction) {
+    return firestoreDatasource.createTransaction(
+      TransactionModel.fromEntity(transaction),
+    );
   }
 
   @override
-  Future<void> updateTransaction(Transaction transaction) async {
-    final transactionModel = TransactionModel.fromEntity(transaction);
-    await networkDatasource.updateTransaction(transactionModel);
+  Future<void> updateTransaction(Transaction transaction) {
+    return firestoreDatasource.updateTransaction(
+      TransactionModel.fromEntity(transaction),
+    );
   }
 
   @override
-  Future<void> deleteTransaction(String id) async {
-    await networkDatasource.deleteTransaction(id);
+  Future<void> deleteTransaction(String id) {
+    return firestoreDatasource.deleteTransaction(id);
   }
 
   @override
-  Future<AnnualGrowth> getAnnualGrowth(int year) async {
-    final result = await networkDatasource.getAnnualGrowth(year);
-    Logger().i('Fetched annual growth for year: $year');
-    return result;
+  Future<AnnualGrowth> getAnnualGrowth(int year) {
+    return firestoreDatasource.getAnnualGrowth(year);
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kedai_ayam_nina/features/transactions/domain/entities/annual_growth.dart';
 import 'package:kedai_ayam_nina/features/transactions/presentations/bloc/transaction_bloc.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class AnnualGrowthPage extends StatefulWidget {
   const AnnualGrowthPage({super.key});
@@ -13,23 +14,31 @@ class AnnualGrowthPage extends StatefulWidget {
 
 class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
   int _selectedYear = DateTime.now().year;
+  bool _wasVisible = false;
+  bool _hasLoaded = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchData();
+  void _handleVisibilityChanged(VisibilityInfo visibilityInfo) {
+    final isVisible = visibilityInfo.visibleFraction > 0;
+
+    if (isVisible && (!_wasVisible || !_hasLoaded)) {
+      _hasLoaded = true;
+      _fetchData();
+    }
+
+    _wasVisible = isVisible;
   }
 
   void _fetchData() {
-    context
-        .read<TransactionBloc>()
-        .add(GetAnnualGrowthEvent(year: _selectedYear));
+    context.read<TransactionBloc>().add(
+      GetAnnualGrowthEvent(year: _selectedYear),
+    );
   }
 
   void _changeYear(int delta) {
     setState(() {
       _selectedYear += delta;
     });
+
     _fetchData();
   }
 
@@ -37,69 +46,78 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Text(
-              "Kitchen Analytics",
-              style: theme.textTheme.displayMedium,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "Pantau pertumbuhan keuangan Dapur Ayam Nina",
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.grey.shade600,
+    return VisibilityDetector(
+      key: const Key('annual-growth-page-visibility'),
+      onVisibilityChanged: _handleVisibilityChanged,
+      child: Scaffold(
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Text("Kitchen Analytics", style: theme.textTheme.displayMedium),
+              const SizedBox(height: 4),
+              Text(
+                "Pantau pertumbuhan keuangan Dapur Ayam Nina",
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey.shade600,
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-            // Year Selector
-            _buildYearSelector(theme),
-            const SizedBox(height: 24),
+              // Year Selector
+              _buildYearSelector(theme),
+              const SizedBox(height: 24),
 
-            // Content
-            BlocBuilder<TransactionBloc, TransactionState>(
-              builder: (context, state) {
-                if (state is TransactionLoading) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(64),
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-                if (state is TransactionError) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(64),
-                      child: Column(
-                        children: [
-                          Icon(Icons.error_outline,
-                              size: 48, color: Colors.red.shade300),
-                          const SizedBox(height: 16),
-                          Text(state.message,
-                              style: theme.textTheme.bodyMedium),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _fetchData,
-                            child: const Text("Coba Lagi"),
-                          ),
-                        ],
+              // Content
+              BlocBuilder<TransactionBloc, TransactionState>(
+                builder: (context, state) {
+                  if (state is TransactionLoading) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(64),
+                        child: CircularProgressIndicator(),
                       ),
-                    ),
-                  );
-                }
-                if (state is AnnualGrowthLoaded) {
-                  return _buildDashboard(context, theme, state.annualGrowth);
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ],
+                    );
+                  }
+
+                  if (state is TransactionError) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(64),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 48,
+                              color: Colors.red.shade300,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              state.message,
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _fetchData,
+                              child: const Text("Coba Lagi"),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (state is AnnualGrowthLoaded) {
+                    return _buildDashboard(context, theme, state.annualGrowth);
+                  }
+
+                  return const SizedBox.shrink();
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -157,7 +175,11 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
     );
   }
 
-  Widget _buildDashboard(BuildContext context, ThemeData theme, AnnualGrowth data) {
+  Widget _buildDashboard(
+    BuildContext context,
+    ThemeData theme,
+    AnnualGrowth data,
+  ) {
     final isSmallScreen = MediaQuery.of(context).size.width < 800;
 
     final summaryCards = [
@@ -228,15 +250,9 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                flex: 3,
-                child: _buildBarChart(theme, data),
-              ),
+              Expanded(flex: 3, child: _buildBarChart(theme, data)),
               const SizedBox(width: 16),
-              Expanded(
-                flex: 2,
-                child: _buildLineChart(theme, data),
-              ),
+              Expanded(flex: 2, child: _buildLineChart(theme, data)),
             ],
           ),
 
@@ -250,8 +266,18 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
 
   Widget _buildBarChart(ThemeData theme, AnnualGrowth data) {
     final monthNames = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
     ];
 
     // Find max value for Y axis
@@ -358,17 +384,17 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
                     ),
                   ),
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.grey.shade200,
-                    strokeWidth: 1,
-                  ),
+                  getDrawingHorizontalLine: (value) =>
+                      FlLine(color: Colors.grey.shade200, strokeWidth: 1),
                 ),
                 borderData: FlBorderData(show: false),
                 barGroups: List.generate(12, (i) {
@@ -442,10 +468,7 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
             children: [
               Icon(Icons.show_chart, color: theme.colorScheme.primary),
               const SizedBox(width: 8),
-              Text(
-                "Tren Profit Bulanan",
-                style: theme.textTheme.titleLarge,
-              ),
+              Text("Tren Profit Bulanan", style: theme.textTheme.titleLarge),
             ],
           ),
           const SizedBox(height: 24),
@@ -479,8 +502,18 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
                       interval: 1,
                       getTitlesWidget: (value, meta) {
                         final monthShort = [
-                          'J', 'F', 'M', 'A', 'M', 'J',
-                          'J', 'A', 'S', 'O', 'N', 'D'
+                          'J',
+                          'F',
+                          'M',
+                          'A',
+                          'M',
+                          'J',
+                          'J',
+                          'A',
+                          'S',
+                          'O',
+                          'N',
+                          'D',
                         ];
                         final idx = value.toInt();
                         if (idx < 0 || idx >= 12) return const SizedBox();
@@ -514,9 +547,11 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
                     ),
                   ),
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
                 gridData: FlGridData(
                   show: true,
@@ -529,10 +564,7 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
                         dashArray: [5, 5],
                       );
                     }
-                    return FlLine(
-                      color: Colors.grey.shade200,
-                      strokeWidth: 1,
-                    );
+                    return FlLine(color: Colors.grey.shade200, strokeWidth: 1);
                   },
                 ),
                 borderData: FlBorderData(show: false),
@@ -543,7 +575,9 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
                           .where((m) => m.month == i + 1)
                           .firstOrNull;
                       return FlSpot(
-                          i.toDouble(), monthly?.profit.toDouble() ?? 0);
+                        i.toDouble(),
+                        monthly?.profit.toDouble() ?? 0,
+                      );
                     }),
                     isCurved: true,
                     curveSmoothness: 0.3,
@@ -584,8 +618,18 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
 
   Widget _buildMonthlyTable(ThemeData theme, AnnualGrowth data) {
     final monthNames = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
     ];
 
     return Container(
@@ -608,10 +652,7 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
             children: [
               Icon(Icons.table_chart, color: theme.colorScheme.primary),
               const SizedBox(width: 8),
-              Text(
-                "Detail Bulanan",
-                style: theme.textTheme.titleLarge,
-              ),
+              Text("Detail Bulanan", style: theme.textTheme.titleLarge),
             ],
           ),
           const SizedBox(height: 16),
@@ -675,8 +716,12 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
     );
   }
 
-  Widget _tableCell(String text,
-      {bool isHeader = false, Color? color, bool isBold = false}) {
+  Widget _tableCell(
+    String text, {
+    bool isHeader = false,
+    Color? color,
+    bool isBold = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       child: Text(
@@ -705,10 +750,7 @@ class _AnnualGrowthPageState extends State<AnnualGrowthPage> {
         const SizedBox(width: 6),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
         ),
       ],
     );
@@ -768,8 +810,8 @@ class _SummaryCard extends StatelessWidget {
     final growthColor = isExpense
         ? (isPositiveGrowth ? const Color(0xFFC62828) : const Color(0xFF2E7D32))
         : (isPositiveGrowth
-            ? const Color(0xFF2E7D32)
-            : const Color(0xFFC62828));
+              ? const Color(0xFF2E7D32)
+              : const Color(0xFFC62828));
     final growthIcon = isPositiveGrowth
         ? Icons.arrow_upward
         : Icons.arrow_downward;
@@ -802,8 +844,10 @@ class _SummaryCard extends StatelessWidget {
               ),
               const Spacer(),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: growthColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -847,10 +891,7 @@ class _SummaryCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             "vs tahun lalu",
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey.shade400,
-            ),
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade400),
           ),
         ],
       ),

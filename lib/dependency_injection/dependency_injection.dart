@@ -17,7 +17,7 @@ import 'package:kedai_ayam_nina/features/produk/domain/usecases/create_product.d
 import 'package:kedai_ayam_nina/features/produk/domain/usecases/delete_product.dart';
 import 'package:kedai_ayam_nina/features/produk/domain/usecases/update_product.dart';
 import 'package:kedai_ayam_nina/features/produk/domain/usecases/get_products.dart';
-import 'package:kedai_ayam_nina/features/transactions/data/datasource/transactions_network_datasource.dart';
+import 'package:kedai_ayam_nina/features/transactions/data/datasource/transaction_firestore_datasource.dart';
 import 'package:kedai_ayam_nina/features/transactions/data/repositories/transaction_repository_impl.dart';
 import 'package:kedai_ayam_nina/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:kedai_ayam_nina/features/transactions/domain/usecases/create_transaction.dart';
@@ -57,8 +57,8 @@ Future<void> setup() async {
   getIt.registerLazySingleton<ProductFirestoreDatasource>(
     () => ProductFirestoreDatasourceImpl(firestore: getIt()),
   );
-  getIt.registerLazySingleton<TransactionsNetworkDatasource>(
-    () => TransactionsNetworkDatasourceImpl(dio: getIt()),
+  getIt.registerLazySingleton<TransactionFirestoreDatasource>(
+    () => TransactionFirestoreDatasourceImpl(firestore: getIt()),
   );
 
   // === REPOSITORIES ===
@@ -69,7 +69,7 @@ Future<void> setup() async {
     () => ProductRepositoryImpl(firestoreDatasource: getIt()),
   );
   getIt.registerLazySingleton<TransactionRepository>(
-    () => TransactionRepositoryImpl(networkDatasource: getIt()),
+    () => TransactionRepositoryImpl(firestoreDatasource: getIt()),
   );
 
   // === USECASES ===

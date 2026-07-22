@@ -8,15 +8,23 @@ sealed class TransactionListState extends Equatable {
 }
 
 final class TransactionListInitial extends TransactionListState {}
+
 final class TransactionListLoading extends TransactionListState {}
+
 final class TransactionListLoaded extends TransactionListState {
   final List<Transaction> transactions;
 
   const TransactionListLoaded({required this.transactions});
+
+  @override
+  List<Object> get props => [transactions];
 }
 
 final class TransactionListError extends TransactionListState {
   final String message;
 
   const TransactionListError({required this.message});
+
+  @override
+  List<Object> get props => [message];
 }
