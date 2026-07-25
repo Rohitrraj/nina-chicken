@@ -97,6 +97,7 @@ class _AboutValueCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return AppCard(
+      premium: true,
       hoverEnabled: false,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 150),

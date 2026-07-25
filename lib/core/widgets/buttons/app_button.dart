@@ -5,16 +5,11 @@ enum AppButtonVariant { primary, secondary, outlined, text, danger }
 
 enum AppButtonSize { small, medium, large }
 
-/// Tombol reusable untuk frontend Kedai Ayam Nina.
+/// Tombol reusable Kedai Ayam Nina.
 ///
-/// Mendukung:
-/// - beberapa varian visual;
-/// - ukuran yang konsisten;
-/// - loading state;
-/// - disabled state;
-/// - leading dan trailing icon;
-/// - full-width atau menyesuaikan isi.
-class AppButton extends StatelessWidget {
+/// [premium] bersifat opt-in agar perubahan visual storefront publik
+/// tidak mengubah halaman admin secara tidak sengaja.
+class AppButton extends StatefulWidget {
   const AppButton({
     super.key,
     required this.label,
@@ -26,6 +21,7 @@ class AppButton extends StatelessWidget {
     this.isLoading = false,
     this.fullWidth = false,
     this.semanticLabel,
+    this.premium = false,
   });
 
   final String label;
@@ -38,8 +34,27 @@ class AppButton extends StatelessWidget {
   final bool fullWidth;
   final String? semanticLabel;
 
+  /// Mengaktifkan gradient halus, radius refined,
+  /// shadow lembut, dan hover lift untuk storefront publik.
+  final bool premium;
+
+  @override
+  State<AppButton> createState() => _AppButtonState();
+}
+
+class _AppButtonState extends State<AppButton> {
+  bool _hovered = false;
+
   bool get _isEnabled {
-    return onPressed != null && !isLoading;
+    return widget.onPressed != null && !widget.isLoading;
+  }
+
+  bool get _supportsLift {
+    return widget.premium && widget.variant != AppButtonVariant.text;
+  }
+
+  bool get _isLifted {
+    return _supportsLift && _isEnabled && _hovered;
   }
 
   @override
@@ -47,11 +62,40 @@ class AppButton extends StatelessWidget {
     final button = Semantics(
       button: true,
       enabled: _isEnabled,
-      label: semanticLabel ?? label,
-      child: _buildButton(context),
+      label: widget.semanticLabel ?? widget.label,
+      child: MouseRegion(
+        cursor: _isEnabled
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        onEnter: (_) {
+          if (_supportsLift && _isEnabled && !_hovered) {
+            setState(() {
+              _hovered = true;
+            });
+          }
+        },
+        onExit: (_) {
+          if (_hovered) {
+            setState(() {
+              _hovered = false;
+            });
+          }
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 190),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(0, _isLifted ? -2 : 0, 0),
+          transformAlignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: _buttonRadius,
+            boxShadow: _premiumShadows,
+          ),
+          child: _buildButton(context),
+        ),
+      ),
     );
 
-    if (!fullWidth) {
+    if (!widget.fullWidth) {
       return button;
     }
 
@@ -59,18 +103,29 @@ class AppButton extends StatelessWidget {
   }
 
   Widget _buildButton(BuildContext context) {
-    final effectiveOnPressed = _isEnabled ? onPressed : null;
+    final effectiveOnPressed = _isEnabled ? widget.onPressed : null;
+
     final child = _ButtonContent(
-      label: label,
-      leadingIcon: leadingIcon,
-      trailingIcon: trailingIcon,
-      isLoading: isLoading,
-      size: size,
+      label: widget.label,
+      leadingIcon: widget.leadingIcon,
+      trailingIcon: widget.trailingIcon,
+      isLoading: widget.isLoading,
+      size: widget.size,
       foregroundColor: _foregroundColor(context),
     );
 
-    switch (variant) {
+    switch (widget.variant) {
       case AppButtonVariant.primary:
+        if (widget.premium) {
+          return _buildPremiumPrimary(context, effectiveOnPressed, child);
+        }
+
+        return FilledButton(
+          onPressed: effectiveOnPressed,
+          style: _filledStyle(context),
+          child: child,
+        );
+
       case AppButtonVariant.secondary:
       case AppButtonVariant.danger:
         return FilledButton(
@@ -89,10 +144,48 @@ class AppButton extends StatelessWidget {
       case AppButtonVariant.text:
         return TextButton(
           onPressed: effectiveOnPressed,
-          style: _textStyle(context),
+          style: _textButtonStyle(context),
           child: child,
         );
     }
+  }
+
+  Widget _buildPremiumPrimary(
+    BuildContext context,
+    VoidCallback? effectiveOnPressed,
+    Widget child,
+  ) {
+    final decoration = BoxDecoration(
+      color: _isEnabled ? null : AppColors.neutral300,
+      gradient: _isEnabled
+          ? const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primary500,
+                AppColors.primary600,
+                AppColors.primary700,
+              ],
+              stops: [0, 0.56, 1],
+            )
+          : null,
+      borderRadius: _buttonRadius,
+      border: Border.all(
+        color: _isEnabled
+            ? AppColors.primary400.withValues(alpha: 0.50)
+            : AppColors.neutral400,
+        width: 1,
+      ),
+    );
+
+    return DecoratedBox(
+      decoration: decoration,
+      child: FilledButton(
+        onPressed: effectiveOnPressed,
+        style: _filledStyle(context),
+        child: child,
+      ),
+    );
   }
 
   ButtonStyle _filledStyle(BuildContext context) {
@@ -101,7 +194,7 @@ class AppButton extends StatelessWidget {
     Color backgroundColor;
     Color foregroundColor;
 
-    switch (variant) {
+    switch (widget.variant) {
       case AppButtonVariant.secondary:
         backgroundColor = colorScheme.secondary;
         foregroundColor = colorScheme.onSecondary;
@@ -117,15 +210,28 @@ class AppButton extends StatelessWidget {
         foregroundColor = colorScheme.onPrimary;
     }
 
+    final usesPremiumGradient =
+        widget.premium && widget.variant == AppButtonVariant.primary;
+
     return FilledButton.styleFrom(
-      backgroundColor: backgroundColor,
+      backgroundColor: usesPremiumGradient
+          ? Colors.transparent
+          : backgroundColor,
       foregroundColor: foregroundColor,
-      disabledBackgroundColor: AppColors.neutral300,
+      disabledBackgroundColor: usesPremiumGradient
+          ? Colors.transparent
+          : AppColors.neutral300,
       disabledForegroundColor: AppColors.neutral600,
+      shadowColor: Colors.transparent,
+      elevation: 0,
       minimumSize: Size(0, _height),
       padding: _padding,
       textStyle: _textStyleForSize,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.sm),
+      shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+      overlayColor: usesPremiumGradient
+          ? Colors.white.withValues(alpha: 0.11)
+          : null,
+      animationDuration: const Duration(milliseconds: 190),
     );
   }
 
@@ -133,20 +239,31 @@ class AppButton extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return OutlinedButton.styleFrom(
-      foregroundColor: colorScheme.primary,
+      foregroundColor: widget.premium
+          ? AppColors.primary700
+          : colorScheme.primary,
+      backgroundColor: widget.premium
+          ? AppColors.publicSurface.withValues(alpha: 0.76)
+          : Colors.transparent,
       disabledForegroundColor: AppColors.neutral500,
       minimumSize: Size(0, _height),
       padding: _padding,
       textStyle: _textStyleForSize,
       side: BorderSide(
-        color: _isEnabled ? colorScheme.primary : AppColors.neutral400,
-        width: 1.5,
+        color: _isEnabled
+            ? colorScheme.primary.withValues(alpha: widget.premium ? 0.68 : 1)
+            : AppColors.neutral400,
+        width: widget.premium ? 1 : 1.5,
       ),
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.sm),
+      shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+      overlayColor: widget.premium
+          ? AppColors.primary100.withValues(alpha: 0.72)
+          : null,
+      animationDuration: const Duration(milliseconds: 190),
     );
   }
 
-  ButtonStyle _textStyle(BuildContext context) {
+  ButtonStyle _textButtonStyle(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return TextButton.styleFrom(
@@ -155,7 +272,11 @@ class AppButton extends StatelessWidget {
       minimumSize: Size(0, _height),
       padding: _padding,
       textStyle: _textStyleForSize,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.sm),
+      shape: RoundedRectangleBorder(borderRadius: _buttonRadius),
+      overlayColor: widget.premium
+          ? AppColors.primary100.withValues(alpha: 0.55)
+          : null,
+      animationDuration: const Duration(milliseconds: 190),
     );
   }
 
@@ -166,7 +287,7 @@ class AppButton extends StatelessWidget {
       return AppColors.neutral600;
     }
 
-    switch (variant) {
+    switch (widget.variant) {
       case AppButtonVariant.primary:
         return colorScheme.onPrimary;
       case AppButtonVariant.secondary:
@@ -175,12 +296,37 @@ class AppButton extends StatelessWidget {
         return colorScheme.onError;
       case AppButtonVariant.outlined:
       case AppButtonVariant.text:
-        return colorScheme.primary;
+        return widget.premium ? AppColors.primary700 : colorScheme.primary;
     }
   }
 
+  BorderRadius get _buttonRadius {
+    return widget.premium ? AppRadius.md : AppRadius.sm;
+  }
+
+  List<BoxShadow> get _premiumShadows {
+    if (!widget.premium ||
+        !_isEnabled ||
+        widget.variant == AppButtonVariant.text) {
+      return const [];
+    }
+
+    final isOutlined = widget.variant == AppButtonVariant.outlined;
+
+    return [
+      BoxShadow(
+        color: isOutlined
+            ? AppColors.publicShadow.withValues(alpha: _isLifted ? 0.11 : 0.06)
+            : AppColors.primary800.withValues(alpha: _isLifted ? 0.22 : 0.13),
+        blurRadius: _isLifted ? 24 : 16,
+        spreadRadius: _isLifted ? 0.5 : 0,
+        offset: Offset(0, _isLifted ? 10 : 6),
+      ),
+    ];
+  }
+
   double get _height {
-    switch (size) {
+    switch (widget.size) {
       case AppButtonSize.small:
         return 40;
       case AppButtonSize.medium:
@@ -191,7 +337,7 @@ class AppButton extends StatelessWidget {
   }
 
   EdgeInsets get _padding {
-    switch (size) {
+    switch (widget.size) {
       case AppButtonSize.small:
         return const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -213,7 +359,7 @@ class AppButton extends StatelessWidget {
   }
 
   TextStyle get _textStyleForSize {
-    switch (size) {
+    switch (widget.size) {
       case AppButtonSize.small:
         return AppTypography.buttonMedium;
       case AppButtonSize.medium:

@@ -20,7 +20,9 @@ class UserDrawer extends StatelessWidget {
 
     return Drawer(
       width: drawerWidth,
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: theme.brightness == Brightness.light
+          ? AppColors.publicSurface
+          : theme.colorScheme.surface,
       surfaceTintColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.horizontal(right: Radius.circular(20)),

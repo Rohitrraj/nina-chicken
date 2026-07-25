@@ -58,6 +58,7 @@ class _ProductDetailGalleryState extends State<ProductDetailGallery> {
   Widget build(BuildContext context) {
     if (_imageUrls.isEmpty) {
       return const AppCard(
+        premium: true,
         padding: EdgeInsets.zero,
         child: AspectRatio(
           aspectRatio: 4 / 3,
@@ -74,6 +75,7 @@ class _ProductDetailGalleryState extends State<ProductDetailGallery> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AppCard(
+          premium: true,
           padding: EdgeInsets.zero,
           semanticLabel: 'Foto ${widget.productName}',
           child: ClipRRect(

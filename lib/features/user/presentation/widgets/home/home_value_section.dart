@@ -97,6 +97,7 @@ class _HomeValueCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return AppCard(
+      premium: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

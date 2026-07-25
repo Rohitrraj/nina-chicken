@@ -16,7 +16,9 @@ class AboutUsPage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: theme.brightness == Brightness.light
+          ? AppColors.publicBackground
+          : theme.scaffoldBackgroundColor,
       drawer: isDesktop ? null : const UserDrawer(),
       body: CustomScrollView(
         slivers: [
@@ -49,6 +51,12 @@ class AboutUsPage extends StatelessWidget {
             child: AnimatedScrollItem(
               id: 'about_process',
               child: AboutProcessSection(),
+            ),
+          ),
+          const SliverToBoxAdapter(
+            child: AnimatedScrollItem(
+              id: 'about_testimonials',
+              child: AboutTestimonialsSection(),
             ),
           ),
           SliverToBoxAdapter(child: UserFooter(isDesktop: isDesktop)),

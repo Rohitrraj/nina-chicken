@@ -27,6 +27,7 @@ class CatalogProductCard extends StatelessWidget {
         : product.description.trim();
 
     return AppCard(
+      premium: true,
       key: ValueKey<String>('catalog-product-card-${product.id}'),
       padding: EdgeInsets.zero,
       onTap: onTap,

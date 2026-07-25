@@ -21,6 +21,7 @@ class ProductDetailSummary extends StatelessWidget {
         : 'Informasi singkat menu belum tersedia.';
 
     return AppCard(
+      premium: true,
       padding: const EdgeInsets.all(AppSpacing.xl),
       semanticLabel: '${product.name}, ${formatRupiah(product.price)}',
       child: Column(

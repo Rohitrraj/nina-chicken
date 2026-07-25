@@ -16,6 +16,7 @@ class ProductDetailDescription extends StatelessWidget {
         : 'Informasi lengkap mengenai menu ini belum tersedia.';
 
     return AppCard(
+      premium: true,
       padding: const EdgeInsets.all(AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

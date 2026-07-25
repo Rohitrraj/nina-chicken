@@ -32,7 +32,9 @@ class _DashboardState extends State<Dashboard> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: theme.brightness == Brightness.light
+          ? AppColors.publicBackground
+          : theme.scaffoldBackgroundColor,
       drawer: isDesktop ? null : const UserDrawer(),
       body: CustomScrollView(
         slivers: [
@@ -40,10 +42,7 @@ class _DashboardState extends State<Dashboard> {
           SliverToBoxAdapter(
             child: AnimatedScrollItem(
               id: 'home_hero',
-              child: HomeHeroSection(
-                onViewMenu: _openCatalog,
-                onContact: _openContact,
-              ),
+              child: HomeHeroSection(onViewMenu: _openCatalog),
             ),
           ),
           SliverToBoxAdapter(
@@ -103,10 +102,7 @@ class _DashboardState extends State<Dashboard> {
           SliverToBoxAdapter(
             child: AnimatedScrollItem(
               id: 'home_cta',
-              child: HomeCtaSection(
-                onViewMenu: _openCatalog,
-                onContact: _openContact,
-              ),
+              child: HomeCtaSection(onContact: _openContact),
             ),
           ),
           SliverToBoxAdapter(child: UserFooter(isDesktop: isDesktop)),

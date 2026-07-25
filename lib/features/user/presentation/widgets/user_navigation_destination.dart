@@ -35,7 +35,7 @@ class UserNavigationDestination {
 
 const userNavigationDestinations = <UserNavigationDestination>[
   UserNavigationDestination(
-    label: 'Home',
+    label: 'Beranda',
     icon: Icons.home_outlined,
     route: MyRoute.home,
   ),
@@ -46,12 +46,12 @@ const userNavigationDestinations = <UserNavigationDestination>[
     additionalActivePaths: {'/detail'},
   ),
   UserNavigationDestination(
-    label: 'About',
+    label: 'Tentang',
     icon: Icons.info_outline_rounded,
     route: MyRoute.about,
   ),
   UserNavigationDestination(
-    label: 'Contact Us',
+    label: 'Kontak',
     icon: Icons.contact_mail_outlined,
     route: MyRoute.contactUs,
   ),

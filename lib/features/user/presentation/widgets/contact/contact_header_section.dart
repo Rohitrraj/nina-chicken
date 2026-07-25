@@ -11,7 +11,7 @@ class ContactHeaderSection extends StatelessWidget {
 
     return AppSection(
       backgroundColor: AppColors.tertiary700,
-      spacing: AppSectionSpacing.regular,
+      spacing: AppSectionSpacing.compact,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 820),
         child: Column(

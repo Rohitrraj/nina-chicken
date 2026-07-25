@@ -25,6 +25,7 @@ void main() {
                 AboutValuesSection(),
                 AboutFamilyStorySection(),
                 AboutProcessSection(),
+                AboutTestimonialsSection(),
               ],
             ),
           ),
@@ -45,6 +46,10 @@ void main() {
     expect(find.text('Mengapa Memilih Kami?'), findsOneWidget);
     expect(find.text('Berawal dari Dapur Keluarga'), findsOneWidget);
     expect(find.text('Proses dari Dapur Kami'), findsOneWidget);
+    expect(find.text('Kata Pelanggan'), findsOneWidget);
+    expect(find.text('5,0'), findsOneWidget);
+    expect(find.text('10 ulasan Google'), findsOneWidget);
+    expect(find.text('Desy Kristyawati'), findsOneWidget);
 
     expect(tester.takeException(), isNull);
   });

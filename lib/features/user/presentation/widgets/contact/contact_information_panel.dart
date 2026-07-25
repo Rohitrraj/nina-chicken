@@ -9,12 +9,14 @@ class ContactInformationPanel extends StatelessWidget {
     super.key,
     required this.phoneNumber,
     required this.location,
+    required this.operatingHours,
     required this.onCopyPhone,
     required this.onCopyLocation,
   });
 
   final String phoneNumber;
   final String location;
+  final String operatingHours;
   final VoidCallback onCopyPhone;
   final VoidCallback onCopyLocation;
 
@@ -23,6 +25,7 @@ class ContactInformationPanel extends StatelessWidget {
     final theme = Theme.of(context);
 
     return AppSection(
+      spacing: AppSectionSpacing.compact,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -43,10 +46,15 @@ class ContactInformationPanel extends StatelessWidget {
               height: 1.55,
             ),
           ),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: AppSpacing.lg),
           AppResponsiveBuilder(
             builder: (context, screenSize, constraints) {
-              final useTwoColumns = !screenSize.isMobile;
+              final columns = switch (screenSize) {
+                AppScreenSize.mobile => 1,
+                AppScreenSize.tablet => 2,
+                AppScreenSize.desktop => 3,
+                AppScreenSize.wideDesktop => 3,
+              };
 
               final cards = [
                 _ContactInformationCard(
@@ -64,30 +72,31 @@ class ContactInformationPanel extends StatelessWidget {
                   title: 'Location',
                   value: location,
                   description:
-                      'Informasi lokasi Kedai Ayam Nina yang '
-                      'tersedia saat ini.',
+                      'Alamat Kedai Ayam Nina berdasarkan '
+                      'informasi Google Maps.',
                   actionLabel: 'Salin Lokasi',
                   onPressed: onCopyLocation,
                 ),
+                _ContactInformationCard(
+                  icon: Icons.schedule_outlined,
+                  title: 'Jam Operasional',
+                  value: operatingHours,
+                  description:
+                      'Jam operasional Kedai Ayam Nina '
+                      'berlaku setiap hari.',
+                ),
               ];
 
-              if (useTwoColumns) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: cards[0]),
-                    const SizedBox(width: AppSpacing.lg),
-                    Expanded(child: cards[1]),
-                  ],
-                );
-              }
+              final totalSpacing = AppSpacing.lg * (columns - 1);
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              final itemWidth = (constraints.maxWidth - totalSpacing) / columns;
+
+              return Wrap(
+                spacing: AppSpacing.lg,
+                runSpacing: AppSpacing.lg,
                 children: [
-                  cards[0],
-                  const SizedBox(height: AppSpacing.lg),
-                  cards[1],
+                  for (final card in cards)
+                    SizedBox(width: itemWidth, child: card),
                 ],
               );
             },
@@ -104,22 +113,23 @@ class _ContactInformationCard extends StatelessWidget {
     required this.title,
     required this.value,
     required this.description,
-    required this.actionLabel,
-    required this.onPressed,
+    this.actionLabel,
+    this.onPressed,
   });
 
   final IconData icon;
   final String title;
   final String value;
   final String description;
-  final String actionLabel;
-  final VoidCallback onPressed;
+  final String? actionLabel;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return AppCard(
+      premium: true,
       hoverEnabled: false,
       padding: const EdgeInsets.all(AppSpacing.xl),
       child: Column(
@@ -146,9 +156,10 @@ class _ContactInformationCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           SelectableText(
             value,
-            style: theme.textTheme.titleSmall?.copyWith(
+            style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.primary,
               fontWeight: FontWeight.w700,
+              height: 1.5,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -159,14 +170,17 @@ class _ContactInformationCard extends StatelessWidget {
               height: 1.55,
             ),
           ),
-          const SizedBox(height: AppSpacing.xl),
-          AppButton(
-            label: actionLabel,
-            leadingIcon: Icons.content_copy_rounded,
-            variant: AppButtonVariant.outlined,
-            size: AppButtonSize.small,
-            onPressed: onPressed,
-          ),
+          if (actionLabel != null && onPressed != null) ...[
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(
+              premium: true,
+              label: actionLabel!,
+              leadingIcon: Icons.content_copy_rounded,
+              variant: AppButtonVariant.outlined,
+              size: AppButtonSize.small,
+              onPressed: onPressed,
+            ),
+          ],
         ],
       ),
     );

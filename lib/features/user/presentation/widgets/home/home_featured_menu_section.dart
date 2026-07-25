@@ -48,7 +48,9 @@ class HomeFeaturedMenuSection extends StatelessWidget {
     final theme = Theme.of(context);
 
     return AppSection(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: theme.brightness == Brightness.light
+          ? AppColors.publicSurface
+          : theme.colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -82,6 +84,7 @@ class HomeFeaturedMenuSection extends StatelessWidget {
               );
 
               final action = AppButton(
+                premium: true,
                 label: 'Lihat Menu Lengkap',
                 variant: AppButtonVariant.text,
                 size: AppButtonSize.small,

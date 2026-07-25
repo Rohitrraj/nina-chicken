@@ -3,13 +3,8 @@ import 'package:kedai_ayam_nina/core/design_system/design_system.dart';
 
 /// Surface card reusable untuk halaman publik dan admin.
 ///
-/// Mendukung:
-/// - border;
-/// - elevation;
-/// - hover dan keyboard focus;
-/// - aksi klik;
-/// - semantic label;
-/// - custom padding dan background.
+/// [premium] bersifat opt-in agar storefront publik dapat memakai
+/// surface hangat dan hover refined tanpa mengubah halaman admin.
 class AppCard extends StatefulWidget {
   const AppCard({
     super.key,
@@ -23,6 +18,7 @@ class AppCard extends StatefulWidget {
     this.hoverEnabled = true,
     this.semanticLabel,
     this.clipBehavior = Clip.antiAlias,
+    this.premium = false,
   });
 
   final Widget child;
@@ -35,6 +31,10 @@ class AppCard extends StatefulWidget {
   final bool hoverEnabled;
   final String? semanticLabel;
   final Clip clipBehavior;
+
+  /// Mengaktifkan surface warm ivory, border refined,
+  /// shadow hangat, dan hover lift dua pixel.
+  final bool premium;
 
   @override
   State<AppCard> createState() => _AppCardState();
@@ -54,6 +54,21 @@ class _AppCardState extends State<AppCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    final usesPremiumLightSurface =
+        widget.premium && theme.brightness == Brightness.light;
+
+    final effectiveBackground =
+        widget.backgroundColor ??
+        (usesPremiumLightSurface
+            ? AppColors.publicSurface
+            : colorScheme.surface);
+
+    final effectiveBorder =
+        widget.borderColor ??
+        (usesPremiumLightSurface
+            ? AppColors.publicBorder
+            : colorScheme.outlineVariant);
 
     return Semantics(
       container: true,
@@ -85,19 +100,20 @@ class _AppCardState extends State<AppCard> {
               }
             },
             child: TweenAnimationBuilder<double>(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOut,
-              tween: Tween<double>(end: _shouldElevate ? 5 : 0),
-              builder: (context, elevation, child) {
-                return Material(
-                  color: widget.backgroundColor ?? colorScheme.surface,
-                  elevation: elevation,
+              duration: const Duration(milliseconds: 190),
+              curve: Curves.easeOutCubic,
+              tween: Tween<double>(end: _shouldElevate ? 1 : 0),
+              builder: (context, progress, child) {
+                final material = Material(
+                  color: effectiveBackground,
+                  elevation: widget.premium ? 0 : 5 * progress,
                   shadowColor: theme.shadowColor.withValues(alpha: 0.14),
                   clipBehavior: widget.clipBehavior,
                   shape: RoundedRectangleBorder(
                     borderRadius: widget.borderRadius,
                     side: BorderSide(
-                      color: widget.borderColor ?? colorScheme.outlineVariant,
+                      color: effectiveBorder,
+                      width: widget.premium ? 1 : 1,
                     ),
                   ),
                   child: InkWell(
@@ -107,6 +123,32 @@ class _AppCardState extends State<AppCard> {
                         : SystemMouseCursors.click,
                     borderRadius: widget.borderRadius,
                     child: child,
+                  ),
+                );
+
+                if (!widget.premium) {
+                  return material;
+                }
+
+                return Transform.translate(
+                  offset: Offset(0, -2 * progress),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: widget.borderRadius,
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              (theme.brightness == Brightness.light
+                                      ? AppColors.publicShadow
+                                      : Colors.black)
+                                  .withValues(alpha: 0.07 + (0.07 * progress)),
+                          blurRadius: 18 + (10 * progress),
+                          spreadRadius: 0.2 * progress,
+                          offset: Offset(0, 6 + (4 * progress)),
+                        ),
+                      ],
+                    ),
+                    child: material,
                   ),
                 );
               },

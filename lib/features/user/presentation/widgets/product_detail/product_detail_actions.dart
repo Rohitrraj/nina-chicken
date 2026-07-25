@@ -11,6 +11,7 @@ class ProductDetailActions extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: AppButton(
+        premium: true,
         label: 'Lihat Menu Lain',
         variant: AppButtonVariant.primary,
         size: AppButtonSize.medium,

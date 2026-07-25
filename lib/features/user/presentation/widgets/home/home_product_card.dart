@@ -22,6 +22,7 @@ class HomeProductCard extends StatelessWidget {
         : product.description.trim();
 
     return AppCard(
+      premium: true,
       key: ValueKey<String>('home-product-card-${product.id}'),
       padding: EdgeInsets.zero,
       onTap: onTap,

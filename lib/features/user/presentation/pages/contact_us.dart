@@ -12,7 +12,14 @@ class ContactUsPage extends StatelessWidget {
   const ContactUsPage({super.key});
 
   static const String _phoneNumber = '+62 895-3832-05337';
-  static const String _location = 'Jakarta Barat, Indonesia';
+
+  static const String _location =
+      '5 Jalan Anyar Raya No. 46B, RT.7/RW.10, '
+      'Wijaya Kusuma, Kec. Grogol Petamburan, '
+      'Kota Jakarta Barat, Daerah Khusus Ibukota '
+      'Jakarta 11460';
+
+  static const String _operatingHours = 'Setiap hari, 10.00 - 22.00';
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +28,9 @@ class ContactUsPage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: theme.brightness == Brightness.light
+          ? AppColors.publicBackground
+          : theme.scaffoldBackgroundColor,
       drawer: isDesktop ? null : const UserDrawer(),
       body: CustomScrollView(
         slivers: [
@@ -38,6 +47,7 @@ class ContactUsPage extends StatelessWidget {
               child: ContactInformationPanel(
                 phoneNumber: _phoneNumber,
                 location: _location,
+                operatingHours: _operatingHours,
                 onCopyPhone: () {
                   _copyText(
                     context,

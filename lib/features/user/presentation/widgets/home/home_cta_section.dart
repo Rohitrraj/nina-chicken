@@ -4,13 +4,8 @@ import 'package:kedai_ayam_nina/core/widgets/buttons/buttons.dart';
 import 'package:kedai_ayam_nina/core/widgets/layout/layout.dart';
 
 class HomeCtaSection extends StatelessWidget {
-  const HomeCtaSection({
-    super.key,
-    required this.onViewMenu,
-    required this.onContact,
-  });
+  const HomeCtaSection({super.key, required this.onContact});
 
-  final VoidCallback onViewMenu;
   final VoidCallback onContact;
 
   @override
@@ -55,10 +50,12 @@ class HomeCtaSection extends StatelessWidget {
               ],
             );
 
-            final actions = _CtaActions(
-              horizontal: useHorizontalLayout,
-              onViewMenu: onViewMenu,
-              onContact: onContact,
+            final action = AppButton(
+              premium: true,
+              label: 'Hubungi Kami',
+              variant: AppButtonVariant.outlined,
+              size: AppButtonSize.medium,
+              onPressed: onContact,
             );
 
             if (useHorizontalLayout) {
@@ -66,7 +63,7 @@ class HomeCtaSection extends StatelessWidget {
                 children: [
                   Expanded(child: content),
                   const SizedBox(width: AppSpacing.xl),
-                  actions,
+                  action,
                 ],
               );
             }
@@ -76,59 +73,12 @@ class HomeCtaSection extends StatelessWidget {
               children: [
                 content,
                 const SizedBox(height: AppSpacing.lg),
-                actions,
+                SizedBox(width: double.infinity, child: action),
               ],
             );
           },
         ),
       ),
-    );
-  }
-}
-
-class _CtaActions extends StatelessWidget {
-  const _CtaActions({
-    required this.horizontal,
-    required this.onViewMenu,
-    required this.onContact,
-  });
-
-  final bool horizontal;
-  final VoidCallback onViewMenu;
-  final VoidCallback onContact;
-
-  @override
-  Widget build(BuildContext context) {
-    final children = [
-      AppButton(
-        label: 'Lihat Semua Menu',
-        variant: AppButtonVariant.primary,
-        size: AppButtonSize.medium,
-        onPressed: onViewMenu,
-      ),
-      AppButton(
-        label: 'Hubungi Kami',
-        variant: AppButtonVariant.outlined,
-        size: AppButtonSize.medium,
-        onPressed: onContact,
-      ),
-    ];
-
-    if (horizontal) {
-      return Wrap(
-        spacing: AppSpacing.sm,
-        runSpacing: AppSpacing.sm,
-        children: children,
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(width: double.infinity, child: children[0]),
-        const SizedBox(height: AppSpacing.sm),
-        SizedBox(width: double.infinity, child: children[1]),
-      ],
     );
   }
 }

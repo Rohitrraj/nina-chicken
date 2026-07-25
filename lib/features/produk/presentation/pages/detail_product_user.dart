@@ -21,7 +21,9 @@ class DetailProductUserPage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: theme.brightness == Brightness.light
+          ? AppColors.publicBackground
+          : theme.scaffoldBackgroundColor,
       drawer: isDesktop ? null : const UserDrawer(),
       body: CustomScrollView(
         slivers: [

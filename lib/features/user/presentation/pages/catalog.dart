@@ -46,7 +46,9 @@ class _CatalogPageState extends State<CatalogPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: theme.brightness == Brightness.light
+          ? AppColors.publicBackground
+          : theme.scaffoldBackgroundColor,
       drawer: isDesktop ? null : const UserDrawer(),
       body: CustomScrollView(
         slivers: [
@@ -75,14 +77,18 @@ class _CatalogPageState extends State<CatalogPage> {
 
     if (state is ProductCatalogInitial || state is ProductCatalogLoading) {
       return AppSection(
-        backgroundColor: theme.colorScheme.surface,
+        backgroundColor: theme.brightness == Brightness.light
+            ? AppColors.publicBackground
+            : theme.colorScheme.surface,
         child: const AppLoadingView(message: 'Memuat daftar menu...'),
       );
     }
 
     if (state is ProductCatalogError) {
       return AppSection(
-        backgroundColor: theme.colorScheme.surface,
+        backgroundColor: theme.brightness == Brightness.light
+            ? AppColors.publicBackground
+            : theme.colorScheme.surface,
         child: AppFeedbackView.error(
           title: 'Gagal memuat menu',
           message: 'Terjadi kendala ketika mengambil daftar menu.',
@@ -97,7 +103,9 @@ class _CatalogPageState extends State<CatalogPage> {
     }
 
     return AppSection(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: theme.brightness == Brightness.light
+          ? AppColors.publicBackground
+          : theme.colorScheme.surface,
       child: AppFeedbackView.error(
         title: 'Menu tidak dapat ditampilkan',
         message: 'Status daftar menu tidak dikenali. Silakan muat ulang.',
@@ -121,7 +129,10 @@ class _CatalogPageState extends State<CatalogPage> {
     );
 
     return AppSection(
-      backgroundColor: theme.colorScheme.surface,
+      spacing: AppSectionSpacing.compact,
+      backgroundColor: theme.brightness == Brightness.light
+          ? AppColors.publicBackground
+          : theme.colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

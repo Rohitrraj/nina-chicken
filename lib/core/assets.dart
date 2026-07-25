@@ -14,16 +14,6 @@ class Assets {
 
   static const String ninaFamilyStory =
       'assets/images/nina/nina-chicken-keluargastory.webp';
-
-  static const String ninaSignboard = 'assets/images/nina/nina-signboard.webp';
-
-  static const String ninaInterior = 'assets/images/nina/nina-interior.webp';
-
-  static const String ninaStorefront =
-      'assets/images/nina/nina-storefront.webp';
-
-  static const String ninaCustomers = 'assets/images/nina/nina-customers.webp';
-
   static const String aboutHero = 'assets/about/about-hero.jpg';
 
   static const String aboutFamilyStory = 'assets/about/about-family-story.jpg';

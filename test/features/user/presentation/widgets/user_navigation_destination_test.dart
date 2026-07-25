@@ -28,4 +28,13 @@ void main() {
       expect(about.isActive('/contact_us'), isFalse);
     });
   });
+
+  test('uses Indonesian public navigation labels', () {
+    expect(
+      userNavigationDestinations
+          .map((destination) => destination.label)
+          .toList(),
+      ['Beranda', 'Menu', 'Tentang', 'Kontak'],
+    );
+  });
 }

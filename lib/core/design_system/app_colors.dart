@@ -77,6 +77,16 @@ class AppColors {
   static const Color surfaceMuted = Color(0xFFF6F0E5);
   static const Color surfaceStrong = Color(0xFFECE1D2);
 
+  // ---------------------------------------------------------------------------
+  // Public storefront — warm editorial surfaces
+  // ---------------------------------------------------------------------------
+
+  static const Color publicBackground = Color(0xFFFFF8EC);
+  static const Color publicSurface = Color(0xFFFFFCF6);
+  static const Color publicSurfaceMuted = Color(0xFFF7EBDD);
+  static const Color publicBorder = Color(0xFFE6D5C0);
+  static const Color publicShadow = Color(0xFF4A2A16);
+
   static const Color border = Color(0xFFE2D6C7);
   static const Color borderStrong = Color(0xFFC8B9A8);
 

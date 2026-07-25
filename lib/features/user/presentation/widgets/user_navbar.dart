@@ -25,12 +25,14 @@ class UserNavBar extends StatelessWidget {
     return SliverAppBar(
       automaticallyImplyLeading: false,
       pinned: true,
-      floating: true,
+      floating: false,
       snap: false,
       toolbarHeight: 76,
       elevation: 0,
       scrolledUnderElevation: 2,
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: theme.brightness == Brightness.light
+          ? AppColors.publicSurface
+          : theme.colorScheme.surface,
       foregroundColor: theme.colorScheme.onSurface,
       surfaceTintColor: Colors.transparent,
       flexibleSpace: SafeArea(
@@ -153,31 +155,74 @@ class _DesktopNavigationButton extends StatelessWidget {
       button: true,
       selected: selected,
       label: destination.label,
-      child: TextButton(
-        onPressed: () {
-          final currentPath = GoRouterState.of(context).uri.path;
-
-          if (!destination.isActive(currentPath)) {
-            context.goNamed(destination.route.name);
-          }
-        },
-        style: TextButton.styleFrom(
-          foregroundColor: selected
-              ? theme.colorScheme.onPrimaryContainer
-              : theme.colorScheme.onSurfaceVariant,
-          backgroundColor: selected
-              ? theme.colorScheme.primaryContainer
-              : Colors.transparent,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          shape: const RoundedRectangleBorder(borderRadius: AppRadius.sm),
-          textStyle: theme.textTheme.labelLarge?.copyWith(
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-          ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          gradient: selected
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.primary100, AppColors.primary50],
+                )
+              : null,
+          borderRadius: AppRadius.pill,
+          border: selected
+              ? Border.all(color: AppColors.primary200, width: 1)
+              : null,
         ),
-        child: Text(destination.label),
+        child: TextButton(
+          onPressed: () {
+            final currentPath = GoRouterState.of(context).uri.path;
+
+            if (!destination.isActive(currentPath)) {
+              context.goNamed(destination.route.name);
+            }
+          },
+          style: ButtonStyle(
+            animationDuration: const Duration(milliseconds: 180),
+            foregroundColor: WidgetStateProperty.resolveWith((states) {
+              if (selected) {
+                return AppColors.primary800;
+              }
+
+              if (states.contains(WidgetState.hovered) ||
+                  states.contains(WidgetState.focused)) {
+                return AppColors.primary700;
+              }
+
+              return theme.colorScheme.onSurfaceVariant;
+            }),
+            backgroundColor: WidgetStateProperty.resolveWith((states) {
+              if (selected) {
+                return Colors.transparent;
+              }
+
+              if (states.contains(WidgetState.hovered) ||
+                  states.contains(WidgetState.focused)) {
+                return AppColors.primary50.withValues(alpha: 0.90);
+              }
+
+              return Colors.transparent;
+            }),
+            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+            padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+            ),
+            shape: const WidgetStatePropertyAll(
+              RoundedRectangleBorder(borderRadius: AppRadius.pill),
+            ),
+            textStyle: WidgetStatePropertyAll(
+              theme.textTheme.labelLarge?.copyWith(
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+              ),
+            ),
+          ),
+          child: Text(destination.label),
+        ),
       ),
     );
   }

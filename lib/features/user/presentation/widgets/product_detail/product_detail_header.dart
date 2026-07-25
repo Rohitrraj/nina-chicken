@@ -18,6 +18,7 @@ class ProductDetailHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppButton(
+            premium: true,
             label: 'Kembali ke Menu',
             variant: AppButtonVariant.text,
             size: AppButtonSize.small,
