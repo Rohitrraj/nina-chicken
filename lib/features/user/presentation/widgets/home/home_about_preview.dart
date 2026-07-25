@@ -101,6 +101,7 @@ class _AboutContent extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xl),
         AppButton(
+          premium: true,
           label: 'Baca Cerita Kami',
           variant: AppButtonVariant.outlined,
           size: AppButtonSize.medium,
@@ -119,18 +120,33 @@ class _AboutVisual extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return AspectRatio(
-      aspectRatio: 4 / 3,
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.primaryContainer,
-          borderRadius: AppRadius.lg,
-        ),
-        child: Image.asset(
-          Assets.logoC1,
-          fit: BoxFit.contain,
-          semanticLabel: 'Logo Kedai Ayam Nina',
+    return Semantics(
+      image: true,
+      label: 'Sajian menu Kedai Ayam Nina',
+      child: AspectRatio(
+        aspectRatio: 3 / 2,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.lg,
+            border: Border.all(color: theme.colorScheme.outlineVariant),
+            boxShadow: [
+              BoxShadow(
+                color: theme.shadowColor.withValues(alpha: 0.10),
+                blurRadius: 28,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: AppRadius.lg,
+            child: Image.asset(
+              Assets.ninaHomeAbout,
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+              filterQuality: FilterQuality.high,
+              excludeFromSemantics: true,
+            ),
+          ),
         ),
       ),
     );

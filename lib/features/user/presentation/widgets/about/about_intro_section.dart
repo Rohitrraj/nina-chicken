@@ -123,26 +123,27 @@ class _AboutIntroVisual extends StatelessWidget {
 
     return Semantics(
       image: true,
-      label: 'Suasana tempat makan Kedai Ayam Nina',
+      label: 'Suasana interior Kedai Ayam Nina',
       child: AspectRatio(
-        aspectRatio: 16 / 10,
+        aspectRatio: 16 / 9,
         child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: AppRadius.lg,
             border: Border.all(color: theme.colorScheme.outlineVariant),
             boxShadow: [
               BoxShadow(
-                color: theme.shadowColor.withValues(alpha: 0.1),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
+                color: theme.shadowColor.withValues(alpha: 0.10),
+                blurRadius: 28,
+                offset: const Offset(0, 12),
               ),
             ],
           ),
           child: ClipRRect(
             borderRadius: AppRadius.lg,
             child: Image.asset(
-              Assets.aboutHero,
+              Assets.ninaAboutIntro,
               fit: BoxFit.cover,
+              alignment: Alignment.center,
               filterQuality: FilterQuality.high,
               excludeFromSemantics: true,
             ),

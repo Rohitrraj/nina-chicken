@@ -53,19 +53,34 @@ class _FamilyStoryVisual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Semantics(
       image: true,
-      label: 'Hidangan ayam dari dapur Kedai Ayam Nina',
+      label: 'Ilustrasi kisah keluarga Kedai Ayam Nina',
       child: AspectRatio(
-        aspectRatio: 16 / 10,
-        child: ClipRRect(
-          borderRadius: AppRadius.lg,
-          child: Image.asset(
-            Assets.aboutFamilyStory,
-            fit: BoxFit.cover,
-            alignment: Alignment.center,
-            filterQuality: FilterQuality.high,
-            excludeFromSemantics: true,
+        aspectRatio: 16 / 9,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.lg,
+            border: Border.all(color: theme.colorScheme.outlineVariant),
+            boxShadow: [
+              BoxShadow(
+                color: theme.shadowColor.withValues(alpha: 0.09),
+                blurRadius: 26,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: AppRadius.lg,
+            child: Image.asset(
+              Assets.ninaFamilyStory,
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+              filterQuality: FilterQuality.high,
+              excludeFromSemantics: true,
+            ),
           ),
         ),
       ),

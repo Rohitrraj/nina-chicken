@@ -5,14 +5,9 @@ import 'package:kedai_ayam_nina/core/widgets/buttons/buttons.dart';
 import 'package:kedai_ayam_nina/core/widgets/layout/layout.dart';
 
 class HomeHeroSection extends StatelessWidget {
-  const HomeHeroSection({
-    super.key,
-    required this.onViewMenu,
-    required this.onContact,
-  });
+  const HomeHeroSection({super.key, required this.onViewMenu});
 
   final VoidCallback onViewMenu;
-  final VoidCallback onContact;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +28,6 @@ class HomeHeroSection extends StatelessWidget {
                   child: _HeroContent(
                     useDesktopLayout: true,
                     onViewMenu: onViewMenu,
-                    onContact: onContact,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sectionSm),
@@ -48,11 +42,7 @@ class HomeHeroSection extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _HeroContent(
-                useDesktopLayout: false,
-                onViewMenu: onViewMenu,
-                onContact: onContact,
-              ),
+              _HeroContent(useDesktopLayout: false, onViewMenu: onViewMenu),
               const SizedBox(height: AppSpacing.xxl),
               const _HeroVisual(useDesktopLayout: false),
             ],
@@ -67,12 +57,10 @@ class _HeroContent extends StatelessWidget {
   const _HeroContent({
     required this.useDesktopLayout,
     required this.onViewMenu,
-    required this.onContact,
   });
 
   final bool useDesktopLayout;
   final VoidCallback onViewMenu;
-  final VoidCallback onContact;
 
   @override
   Widget build(BuildContext context) {
@@ -94,22 +82,17 @@ class _HeroContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              borderRadius: AppRadius.pill,
-            ),
-            child: Text(
-              'KEDAI AYAM NINA',
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: theme.colorScheme.onPrimaryContainer,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.2,
-              ),
+          Semantics(
+            image: true,
+            label: 'Logo Kedai Ayam Nina',
+            child: Image.asset(
+              Assets.logoC1,
+              width: 58,
+              height: 44,
+              fit: BoxFit.contain,
+              alignment: Alignment.centerLeft,
+              filterQuality: FilterQuality.high,
+              excludeFromSemantics: true,
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -140,7 +123,6 @@ class _HeroContent extends StatelessWidget {
           _HeroActions(
             useDesktopLayout: useDesktopLayout,
             onViewMenu: onViewMenu,
-            onContact: onContact,
           ),
           const SizedBox(height: AppSpacing.xl),
           const Wrap(
@@ -171,62 +153,27 @@ class _HeroActions extends StatelessWidget {
   const _HeroActions({
     required this.useDesktopLayout,
     required this.onViewMenu,
-    required this.onContact,
   });
 
   final bool useDesktopLayout;
   final VoidCallback onViewMenu;
-  final VoidCallback onContact;
 
   @override
   Widget build(BuildContext context) {
+    final button = AppButton(
+      premium: true,
+      label: 'Lihat Semua Menu',
+      variant: AppButtonVariant.primary,
+      size: AppButtonSize.large,
+      trailingIcon: Icons.arrow_forward_rounded,
+      onPressed: onViewMenu,
+    );
+
     if (useDesktopLayout) {
-      return Wrap(
-        spacing: AppSpacing.sm,
-        runSpacing: AppSpacing.sm,
-        children: [
-          AppButton(
-            label: 'Lihat Semua Menu',
-            variant: AppButtonVariant.primary,
-            size: AppButtonSize.large,
-            trailingIcon: Icons.arrow_forward_rounded,
-            onPressed: onViewMenu,
-          ),
-          AppButton(
-            label: 'Hubungi Kami',
-            variant: AppButtonVariant.outlined,
-            size: AppButtonSize.large,
-            onPressed: onContact,
-          ),
-        ],
-      );
+      return Align(alignment: Alignment.centerLeft, child: button);
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: AppButton(
-            label: 'Lihat Semua Menu',
-            variant: AppButtonVariant.primary,
-            size: AppButtonSize.large,
-            trailingIcon: Icons.arrow_forward_rounded,
-            onPressed: onViewMenu,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          width: double.infinity,
-          child: AppButton(
-            label: 'Hubungi Kami',
-            variant: AppButtonVariant.outlined,
-            size: AppButtonSize.large,
-            onPressed: onContact,
-          ),
-        ),
-      ],
-    );
+    return SizedBox(width: double.infinity, child: button);
   }
 }
 
@@ -266,72 +213,50 @@ class _HeroVisual extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return AspectRatio(
-      aspectRatio: useDesktopLayout ? 1.02 : 1.12,
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.primaryContainer,
-              theme.colorScheme.secondaryContainer,
+    return Semantics(
+      image: true,
+      label: 'Sajian ayam Kedai Ayam Nina',
+      child: AspectRatio(
+        aspectRatio: useDesktopLayout ? 3 / 2 : 4 / 3,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.xl,
+            border: Border.all(color: theme.colorScheme.outlineVariant),
+            boxShadow: [
+              BoxShadow(
+                color: theme.shadowColor.withValues(alpha: 0.12),
+                blurRadius: 34,
+                offset: const Offset(0, 14),
+              ),
             ],
           ),
-          borderRadius: AppRadius.xl,
-          border: Border.all(color: theme.colorScheme.outlineVariant),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -70,
-              right: -50,
-              child: _DecorativeCircle(
-                size: 190,
-                color: theme.colorScheme.primary.withValues(alpha: 0.12),
-              ),
-            ),
-            Positioned(
-              left: -55,
-              bottom: -65,
-              child: _DecorativeCircle(
-                size: 170,
-                color: theme.colorScheme.secondary.withValues(alpha: 0.15),
-              ),
-            ),
-            Positioned.fill(
-              child: Padding(
-                padding: EdgeInsets.all(
-                  useDesktopLayout ? AppSpacing.sectionSm : AppSpacing.xxl,
+          child: ClipRRect(
+            borderRadius: AppRadius.xl,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  Assets.ninaHomeHero,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                  filterQuality: FilterQuality.high,
+                  excludeFromSemantics: true,
                 ),
-                child: Center(
-                  child: Image.asset(
-                    Assets.logoC1,
-                    fit: BoxFit.contain,
-                    filterQuality: FilterQuality.high,
-                    semanticLabel: 'Logo Kedai Ayam Nina',
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        theme.colorScheme.tertiary.withValues(alpha: 0.10),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-            Positioned(
-              left: AppSpacing.lg,
-              bottom: AppSpacing.lg,
-              child: _HeroBadge(
-                icon: Icons.local_fire_department_outlined,
-                label: 'Ayam geprek',
-              ),
-            ),
-            Positioned(
-              top: AppSpacing.lg,
-              right: AppSpacing.lg,
-              child: _HeroBadge(
-                icon: Icons.storefront_outlined,
-                label: 'Kedai lokal',
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
