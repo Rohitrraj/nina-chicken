@@ -250,6 +250,7 @@ class _YearSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      key: const Key('analytics-year-selector-semantics'),
       container: true,
       label: 'Tahun analitik $selectedYear',
       child: Container(
