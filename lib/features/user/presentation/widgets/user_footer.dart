@@ -76,12 +76,14 @@ class _FooterBrand extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Row(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Image.asset(Assets.logoC1, width: 46, height: 46, fit: BoxFit.contain),
         const SizedBox(width: AppSpacing.sm),
         Flexible(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(

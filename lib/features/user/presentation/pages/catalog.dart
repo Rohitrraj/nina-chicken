@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:kedai_ayam_nina/core/design_system/design_system.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kedai_ayam_nina/core/widgets/animated_scroll_item.dart';
 import 'package:kedai_ayam_nina/core/widgets/card/card_product.dart';
+import 'package:kedai_ayam_nina/core/widgets/feedback/feedback.dart';
 import 'package:kedai_ayam_nina/features/produk/presentation/bloc/product_catalog_bloc.dart';
-import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_navbar.dart';
-import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_footer.dart';
 import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_drawer.dart';
+import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_footer.dart';
+import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_navbar.dart';
 import 'package:kedai_ayam_nina/router/router.dart';
 
 class CatalogPage extends StatefulWidget {
@@ -17,21 +19,23 @@ class CatalogPage extends StatefulWidget {
 }
 
 class _CatalogPageState extends State<CatalogPage> {
-  String selectedCategory = "All";
+  String selectedCategory = 'All';
 
   @override
   void initState() {
     super.initState();
+
     context.read<ProductCatalogBloc>().add(LoadProducts());
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= 800;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isDesktop = AppBreakpoints.isDesktopWidth(screenWidth);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFBF0),
+      backgroundColor: theme.scaffoldBackgroundColor,
       drawer: isDesktop ? null : const UserDrawer(),
       bottomNavigationBar: UserFooter(isDesktop: isDesktop),
       body: CustomScrollView(
@@ -40,18 +44,17 @@ class _CatalogPageState extends State<CatalogPage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: isDesktop ? 64.0 : 24.0,
-                vertical: 48.0,
+                horizontal: isDesktop ? 64 : 24,
+                vertical: 48,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AnimatedScrollItem(
                     id: 'catalog_title',
-                    child: const Text(
-                      "Our Menu",
-                      style: TextStyle(
-                        fontSize: 48,
+                    child: Text(
+                      'Our Menu',
+                      style: theme.textTheme.displaySmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         letterSpacing: -1,
                       ),
@@ -60,11 +63,13 @@ class _CatalogPageState extends State<CatalogPage> {
                   const SizedBox(height: 16),
                   AnimatedScrollItem(
                     id: 'catalog_subtitle',
-                    child: const Text(
-                      "Discover the golden, crispy perfection of Kedai Ayam Nina. From our signature\noriginal recipe to fiery geprek, every bite is a taste of home.",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
+                    child: Text(
+                      'Discover the golden, crispy perfection of '
+                      'Kedai Ayam Nina. From our signature original '
+                      'recipe to fiery geprek, every bite is a taste '
+                      'of home.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
                         height: 1.5,
                       ),
                     ),
@@ -72,7 +77,7 @@ class _CatalogPageState extends State<CatalogPage> {
                   const SizedBox(height: 32),
                   AnimatedScrollItem(
                     id: 'catalog_cats',
-                    child: _buildCategories(),
+                    child: _buildCategories(context),
                   ),
                   const SizedBox(height: 32),
                 ],
@@ -83,31 +88,48 @@ class _CatalogPageState extends State<CatalogPage> {
             builder: (context, state) {
               if (state is ProductCatalogLoading) {
                 return const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
+                  hasScrollBody: false,
+                  child: AppLoadingView(message: 'Memuat daftar menu...'),
                 );
-              } else if (state is ProductCatalogLoaded) {
+              }
+
+              if (state is ProductCatalogLoaded) {
                 final products = state.products;
+
                 if (products.isEmpty) {
                   return const SliverFillRemaining(
-                    child: Center(child: Text("Menu belum tersedia.")),
+                    hasScrollBody: false,
+                    child: AppFeedbackView.empty(
+                      title: 'Menu belum tersedia',
+                      message: 'Daftar menu Kedai Ayam Nina masih kosong.',
+                    ),
                   );
                 }
 
-                // Temporary filter logic
-                final filteredProducts = selectedCategory == "All"
+                final filteredProducts = selectedCategory == 'All'
                     ? products
                     : products
                           .where(
-                            (p) =>
-                                p.category.toLowerCase() ==
+                            (product) =>
+                                product.category.toLowerCase() ==
                                 selectedCategory.toLowerCase(),
                           )
                           .toList();
 
+                if (filteredProducts.isEmpty) {
+                  return const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: AppFeedbackView.empty(
+                      title: 'Produk tidak ditemukan',
+                      message: 'Belum ada produk pada kategori yang dipilih.',
+                    ),
+                  );
+                }
+
                 return SliverPadding(
                   padding: EdgeInsets.symmetric(
-                    horizontal: isDesktop ? 64.0 : 24.0,
-                  ).copyWith(bottom: 64.0),
+                    horizontal: isDesktop ? 64 : 24,
+                  ).copyWith(bottom: 64),
                   sliver: SliverGrid(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: isDesktop ? 3 : 1,
@@ -116,21 +138,37 @@ class _CatalogPageState extends State<CatalogPage> {
                       childAspectRatio: isDesktop ? 0.8 : 0.85,
                     ),
                     delegate: SliverChildBuilderDelegate((context, index) {
+                      final product = filteredProducts[index];
+
                       return AnimatedScrollItem(
                         id: 'product_$index',
                         child: ProductGridItem(
-                          product: filteredProducts[index],
+                          product: product,
                           isAdmin: false,
-                          onDelete: () {}, // No action for user side
-                          onTapCard: () => context.pushNamed(MyRoute.detail.name, extra: filteredProducts[index]),
+                          onDelete: () {},
+                          onTapCard: () {
+                            context.pushNamed(
+                              MyRoute.detail.name,
+                              extra: product,
+                            );
+                          },
                         ),
                       );
                     }, childCount: filteredProducts.length),
                   ),
                 );
               }
-              return const SliverFillRemaining(
-                child: Center(child: Text("Gagal memuat produk")),
+
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: AppFeedbackView.error(
+                  title: 'Gagal memuat produk',
+                  message: 'Terjadi kendala ketika mengambil daftar menu.',
+                  actionLabel: 'Coba lagi',
+                  onAction: () {
+                    context.read<ProductCatalogBloc>().add(LoadProducts());
+                  },
+                ),
               );
             },
           ),
@@ -139,35 +177,42 @@ class _CatalogPageState extends State<CatalogPage> {
     );
   }
 
-  Widget _buildCategories() {
-    final categories = ["All", "Food", "Beverage"];
+  Widget _buildCategories(BuildContext context) {
+    final theme = Theme.of(context);
+    const categories = ['All', 'Food', 'Beverage'];
+
     return Wrap(
       spacing: 12,
       runSpacing: 12,
-      children: categories.map((cat) {
-        final isSelected = selectedCategory == cat;
+      children: categories.map((category) {
+        final isSelected = selectedCategory == category;
+
         return InkWell(
           onTap: () {
             setState(() {
-              selectedCategory = cat;
+              selectedCategory = category;
             });
           },
           borderRadius: BorderRadius.circular(24),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF8B4513) : Colors.white,
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
                 color: isSelected
-                    ? const Color(0xFF8B4513)
-                    : Colors.grey.shade300,
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.outlineVariant,
               ),
             ),
             child: Text(
-              cat,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
+              category,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.onSurfaceVariant,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               ),
             ),

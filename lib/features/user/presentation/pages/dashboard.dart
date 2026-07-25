@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kedai_ayam_nina/core/design_system/design_system.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kedai_ayam_nina/core/assets.dart';
 import 'package:kedai_ayam_nina/core/widgets/animated_scroll_item.dart';
@@ -27,8 +28,8 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= 800;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isDesktop = AppBreakpoints.isDesktopWidth(screenWidth);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDFBF0),
@@ -40,26 +41,37 @@ class _DashboardState extends State<Dashboard> {
 
           // Section 1: Hero
           SliverToBoxAdapter(
-            child: AnimatedScrollItem(id: 'dash_hero', child: _buildHeroSection(isDesktop)),
+            child: AnimatedScrollItem(
+              id: 'dash_hero',
+              child: _buildHeroSection(isDesktop),
+            ),
           ),
 
           // Section 2: Best Sellers
           SliverToBoxAdapter(
-            child: AnimatedScrollItem(id: 'dash_best_seller', child: _buildBestSellersSection(isDesktop)),
+            child: AnimatedScrollItem(
+              id: 'dash_best_seller',
+              child: _buildBestSellersSection(isDesktop),
+            ),
           ),
 
           // Section 3: Rooted in Tradition
           SliverToBoxAdapter(
-            child: AnimatedScrollItem(id: 'dash_footer', child: _buildFooterSection(isDesktop)),
+            child: AnimatedScrollItem(
+              id: 'dash_footer',
+              child: _buildFooterSection(isDesktop),
+            ),
           ),
 
           // Section 4: Contact Us
           SliverToBoxAdapter(
-            child: AnimatedScrollItem(id: 'dash_contact', child: _buildContactUsSection(isDesktop)),
+            child: AnimatedScrollItem(
+              id: 'dash_contact',
+              child: _buildContactUsSection(isDesktop),
+            ),
           ),
 
           // Footer
-          
         ],
       ),
     );
@@ -102,7 +114,7 @@ class _DashboardState extends State<Dashboard> {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
-            child: Image.asset(Assets.logoC1,fit: BoxFit.fitWidth,),
+            child: Image.asset(Assets.logoC1, fit: BoxFit.fitWidth),
           ),
         ),
         const SizedBox(height: 24),
@@ -150,7 +162,9 @@ class _DashboardState extends State<Dashboard> {
         color: Colors.black87,
         borderRadius: BorderRadius.circular(32),
         image: const DecorationImage(
-          image: NetworkImage("https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=1000&auto=format&fit=crop"), // Placeholder Fried Chicken
+          image: NetworkImage(
+            "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=1000&auto=format&fit=crop",
+          ), // Placeholder Fried Chicken
           fit: BoxFit.cover,
         ),
       ),
@@ -174,9 +188,15 @@ class _DashboardState extends State<Dashboard> {
               const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Best Sellers", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+                  Text(
+                    "Best Sellers",
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  ),
                   SizedBox(height: 8),
-                  Text("Curated favorites from our kitchen.", style: TextStyle(color: Colors.grey)),
+                  Text(
+                    "Curated favorites from our kitchen.",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
               TextButton(
@@ -185,7 +205,13 @@ class _DashboardState extends State<Dashboard> {
                 },
                 child: const Row(
                   children: [
-                    Text("View Full Menu", style: TextStyle(color: Color(0xFF8B4513), fontWeight: FontWeight.bold)),
+                    Text(
+                      "View Full Menu",
+                      style: TextStyle(
+                        color: Color(0xFF8B4513),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Icon(Icons.arrow_forward, color: Color(0xFF8B4513)),
                   ],
                 ),
@@ -202,9 +228,9 @@ class _DashboardState extends State<Dashboard> {
                 if (products.isEmpty) {
                   return const Center(child: Text("Menu belum tersedia."));
                 }
-                
+
                 final bestSellers = products.take(2).toList();
-                
+
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -221,7 +247,10 @@ class _DashboardState extends State<Dashboard> {
                       product: product,
                       isAdmin: false,
                       onDelete: () {},
-                      onTapCard: () => context.pushNamed(MyRoute.detail.name, extra: product),
+                      onTapCard: () => context.pushNamed(
+                        MyRoute.detail.name,
+                        extra: product,
+                      ),
                     );
                   },
                 );
@@ -269,7 +298,11 @@ class _DashboardState extends State<Dashboard> {
       children: [
         const Text(
           "Rooted in Tradition,\nCrafted for Today.",
-          style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, height: 1.1),
+          style: TextStyle(
+            fontSize: 40,
+            fontWeight: FontWeight.bold,
+            height: 1.1,
+          ),
         ),
         const SizedBox(height: 24),
         const Text(
@@ -290,7 +323,14 @@ class _DashboardState extends State<Dashboard> {
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text("Read Our Story", style: TextStyle(color: Color(0xFF8B4513), fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                "Read Our Story",
+                style: TextStyle(
+                  color: Color(0xFF8B4513),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
               SizedBox(width: 8),
               Icon(Icons.arrow_forward, color: Color(0xFF8B4513)),
             ],
@@ -306,7 +346,9 @@ class _DashboardState extends State<Dashboard> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         image: const DecorationImage(
-          image: NetworkImage("https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1000&auto=format&fit=crop"), // Placeholder Chef
+          image: NetworkImage(
+            "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1000&auto=format&fit=crop",
+          ), // Placeholder Chef
           fit: BoxFit.cover,
         ),
       ),
@@ -334,16 +376,16 @@ class _DashboardState extends State<Dashboard> {
           const SizedBox(height: 16),
           const Text(
             "Punya pertanyaan atau masukan? Jangan ragu untuk menghubungi kami.",
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-              height: 1.5,
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.black87, height: 1.5),
           ),
           const SizedBox(height: 32),
           _buildContactCard(Icons.phone, "Phone", "+62 895-3832-05337"),
           const SizedBox(height: 16),
-          _buildContactCard(Icons.location_on, "Location", "Jakarta Barat, Indonesia"),
+          _buildContactCard(
+            Icons.location_on,
+            "Location",
+            "Jakarta Barat, Indonesia",
+          ),
         ],
       ),
     );
@@ -380,18 +422,21 @@ class _DashboardState extends State<Dashboard> {
               Text(
                 title,
                 style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.grey),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 content,
                 style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 18),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
             ],
-          )
+          ),
         ],
       ),
     );

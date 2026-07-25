@@ -55,6 +55,7 @@ class AppContentContainer extends StatelessWidget {
           padding: effectivePadding,
           child: Align(
             alignment: alignment,
+            heightFactor: 1,
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: effectiveMaxWidth),
               child: SizedBox(width: double.infinity, child: child),

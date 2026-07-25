@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:kedai_ayam_nina/core/design_system/design_system.dart';
 import 'package:kedai_ayam_nina/core/widgets/animated_scroll_item.dart';
-import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_navbar.dart';
-import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_footer.dart';
+import 'package:kedai_ayam_nina/core/widgets/card/cards.dart';
 import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_drawer.dart';
+import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_footer.dart';
+import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_navbar.dart';
 
 class ContactUsPage extends StatelessWidget {
   const ContactUsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= 800;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isDesktop = AppBreakpoints.isDesktopWidth(screenWidth);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFBF0),
+      backgroundColor: theme.scaffoldBackgroundColor,
       drawer: isDesktop ? null : const UserDrawer(),
       bottomNavigationBar: UserFooter(isDesktop: isDesktop),
       body: CustomScrollView(
@@ -22,18 +25,17 @@ class ContactUsPage extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: isDesktop ? 64.0 : 24.0,
-                vertical: 48.0,
+                horizontal: isDesktop ? 64 : 24,
+                vertical: 48,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AnimatedScrollItem(
                     id: 'contact_title',
-                    child: const Text(
-                      "Contact Us",
-                      style: TextStyle(
-                        fontSize: 48,
+                    child: Text(
+                      'Contact Us',
+                      style: theme.textTheme.displaySmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         letterSpacing: -1,
                       ),
@@ -42,65 +44,37 @@ class ContactUsPage extends StatelessWidget {
                   const SizedBox(height: 24),
                   AnimatedScrollItem(
                     id: 'contact_desc',
-                    child: const Text(
-                      "Punya pertanyaan atau masukan? Jangan ragu untuk menghubungi kami.",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.black87,
+                    child: Text(
+                      'Punya pertanyaan atau masukan? '
+                      'Jangan ragu untuk menghubungi kami.',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
                         height: 1.5,
                       ),
                     ),
                   ),
-                 
+                  const SizedBox(height: 24),
+                  const AnimatedScrollItem(
+                    id: 'contact_card_phone',
+                    child: AppInfoCard(
+                      icon: Icons.phone_outlined,
+                      title: 'Phone',
+                      content: '+62 895-3832-05337',
+                    ),
+                  ),
                   const SizedBox(height: 16),
-                  AnimatedScrollItem(id: 'contact_card_phone', child: _buildContactCard(Icons.phone, "Phone", "+62 895-3832-05337")),
-                  const SizedBox(height: 16),
-                  AnimatedScrollItem(id: 'contact_card_loc', child: _buildContactCard(Icons.location_on, "Location", "Jakarta Barat, Indonesia")),
+                  const AnimatedScrollItem(
+                    id: 'contact_card_loc',
+                    child: AppInfoCard(
+                      icon: Icons.location_on_outlined,
+                      title: 'Location',
+                      content: 'Jakarta Barat, Indonesia',
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
-          
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactCard(IconData icon, String title, String content) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFDFBF0),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: const Color(0xFF8B4513)),
-          ),
-          const SizedBox(width: 24),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                content,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-            ],
-          )
         ],
       ),
     );

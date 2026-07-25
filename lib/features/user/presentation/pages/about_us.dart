@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kedai_ayam_nina/core/design_system/design_system.dart';
 import 'package:kedai_ayam_nina/core/widgets/animated_scroll_item.dart';
 import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_navbar.dart';
 import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_footer.dart';
@@ -9,8 +10,8 @@ class AboutUsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= 800;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isDesktop = AppBreakpoints.isDesktopWidth(screenWidth);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDFBF0),
@@ -62,7 +63,9 @@ class AboutUsPage extends StatelessWidget {
                         color: Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(16),
                         image: const DecorationImage(
-                          image: NetworkImage("https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?q=80&w=1000&auto=format&fit=crop"),
+                          image: NetworkImage(
+                            "https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?q=80&w=1000&auto=format&fit=crop",
+                          ),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -72,7 +75,6 @@ class AboutUsPage extends StatelessWidget {
               ),
             ),
           ),
-          
         ],
       ),
     );
