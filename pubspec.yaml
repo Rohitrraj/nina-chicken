@@ -38,4 +38,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/Logo-C1.png
+    - assets/about/about-hero.jpg
+    - assets/about/about-family-story.jpg
   
