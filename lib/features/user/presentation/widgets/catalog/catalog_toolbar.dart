@@ -40,7 +40,7 @@ class CatalogToolbar extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 520),
               child: AppSearchField(
                 controller: searchController,
-                hintText: 'Cari menu...',
+                hintText: 'Cari nama menu...',
                 semanticLabel: 'Cari menu Kedai Ayam Nina',
                 onChanged: onSearchChanged,
               ),

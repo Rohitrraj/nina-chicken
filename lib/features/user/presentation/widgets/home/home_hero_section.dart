@@ -116,19 +116,21 @@ class _HeroContent extends StatelessWidget {
           Text.rich(
             TextSpan(
               children: [
-                const TextSpan(text: 'Ayam geprek hangat,\n'),
+                const TextSpan(text: 'Kehangatan Kedai dengan '),
                 TextSpan(
-                  text: 'rasa yang selalu dirindukan.',
+                  text: 'Ayam Goreng Renyah',
                   style: TextStyle(color: theme.colorScheme.primary),
                 ),
+                const TextSpan(text: ' yang Sempurna.'),
               ],
             ),
             style: titleStyle,
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Temukan pilihan menu Kedai Ayam Nina dengan cita rasa '
-            'rumahan yang akrab, praktis, dan mudah dinikmati.',
+            'Nikmati ayam goreng berwarna keemasan, bumbu yang '
+            'meresap, dan cita rasa rumahan yang dibuat dari '
+            'bahan pilihan.',
             style: theme.textTheme.bodyLarge?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
               height: 1.6,
@@ -184,7 +186,7 @@ class _HeroActions extends StatelessWidget {
         runSpacing: AppSpacing.sm,
         children: [
           AppButton(
-            label: 'Lihat Menu',
+            label: 'Lihat Semua Menu',
             variant: AppButtonVariant.primary,
             size: AppButtonSize.large,
             trailingIcon: Icons.arrow_forward_rounded,
@@ -206,7 +208,7 @@ class _HeroActions extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: AppButton(
-            label: 'Lihat Menu',
+            label: 'Lihat Semua Menu',
             variant: AppButtonVariant.primary,
             size: AppButtonSize.large,
             trailingIcon: Icons.arrow_forward_rounded,

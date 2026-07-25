@@ -69,7 +69,8 @@ class _AboutContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tentang Kedai Ayam Nina',
+          'Berakar dari Tradisi,\n'
+          'Disajikan untuk Hari Ini.',
           style: theme.textTheme.headlineMedium?.copyWith(
             color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.w800,
@@ -78,9 +79,11 @@ class _AboutContent extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         Text(
-          'Kedai Ayam Nina hadir sebagai tempat untuk '
-          'menikmati pilihan ayam geprek dan mengenal '
-          'menu yang tersedia dengan lebih mudah.',
+          'Kedai Ayam Nina berawal dari keyakinan sederhana '
+          'bahwa ayam goreng bukan sekadar makanan, tetapi '
+          'pengalaman yang menyenangkan. Kami menggunakan bahan '
+          'pilihan, merendam ayam dengan bumbu hingga meresap, '
+          'lalu menggorengnya ketika pesanan diterima.',
           style: theme.textTheme.bodyLarge?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
             height: 1.6,
@@ -88,9 +91,9 @@ class _AboutContent extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'Melalui website ini, pelanggan dapat melihat '
-          'informasi menu, harga, deskripsi, serta kanal '
-          'kontak Kedai Ayam Nina.',
+          'Dapur kami selalu siap menyajikan makanan hangat '
+          'untuk pelanggan. Datang dan rasakan perbedaan dari '
+          'setiap menu yang dibuat dengan perhatian.',
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
             height: 1.6,
@@ -98,7 +101,7 @@ class _AboutContent extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xl),
         AppButton(
-          label: 'Kenali Kami',
+          label: 'Baca Cerita Kami',
           variant: AppButtonVariant.outlined,
           size: AppButtonSize.medium,
           trailingIcon: Icons.arrow_forward_rounded,

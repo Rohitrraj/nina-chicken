@@ -35,7 +35,7 @@ class HomeCtaSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sudah menemukan menu yang menarik?',
+                  'Hubungi Kami',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     color: theme.colorScheme.onPrimaryContainer,
                     fontWeight: FontWeight.w800,
@@ -43,8 +43,8 @@ class HomeCtaSection extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Lihat seluruh katalog atau hubungi '
-                  'Kedai Ayam Nina untuk informasi lebih lanjut.',
+                  'Punya pertanyaan, pesanan khusus, atau masukan? '
+                  'Jangan ragu untuk menghubungi kami.',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onPrimaryContainer.withValues(
                       alpha: 0.8,

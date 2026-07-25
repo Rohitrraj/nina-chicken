@@ -43,10 +43,10 @@ void main() {
   testWidgets('Contact displays phone and location on desktop', (tester) async {
     await pumpContactSections(tester, viewportSize: const Size(1440, 1600));
 
-    expect(find.text('Hubungi Kedai Ayam Nina'), findsOneWidget);
+    expect(find.text('Contact Us'), findsOneWidget);
     expect(find.text('Informasi Kontak'), findsOneWidget);
-    expect(find.text('Nomor Telepon'), findsOneWidget);
-    expect(find.text('Lokasi'), findsOneWidget);
+    expect(find.text('Phone'), findsOneWidget);
+    expect(find.text('Location'), findsOneWidget);
     expect(find.text('+62 895-3832-05337'), findsOneWidget);
     expect(find.text('Jakarta Barat, Indonesia'), findsOneWidget);
 

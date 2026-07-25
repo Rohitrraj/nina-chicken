@@ -26,7 +26,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Lihat Menu'));
+    await tester.tap(find.text('Lihat Semua Menu'));
     await tester.pump();
 
     expect(menuPressed, isTrue);

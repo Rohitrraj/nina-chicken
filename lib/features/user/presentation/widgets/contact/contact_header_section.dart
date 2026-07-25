@@ -40,7 +40,7 @@ class ContactHeaderSection extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Hubungi Kedai Ayam Nina',
+              'Contact Us',
               style: theme.textTheme.displaySmall?.copyWith(
                 color: AppColors.textOnDark,
                 fontWeight: FontWeight.w800,
@@ -49,9 +49,8 @@ class ContactHeaderSection extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Punya pertanyaan mengenai menu atau informasi '
-              'Kedai Ayam Nina? Gunakan informasi kontak yang '
-              'tersedia atau siapkan pesan melalui form berikut.',
+              'Punya pertanyaan atau masukan? '
+              'Jangan ragu untuk menghubungi kami.',
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: AppColors.textOnDark.withValues(alpha: 0.82),
                 height: 1.65,

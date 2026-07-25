@@ -51,7 +51,7 @@ class ContactInformationPanel extends StatelessWidget {
               final cards = [
                 _ContactInformationCard(
                   icon: Icons.phone_outlined,
-                  title: 'Nomor Telepon',
+                  title: 'Phone',
                   value: phoneNumber,
                   description:
                       'Gunakan nomor berikut untuk menghubungi '
@@ -61,7 +61,7 @@ class ContactInformationPanel extends StatelessWidget {
                 ),
                 _ContactInformationCard(
                   icon: Icons.location_on_outlined,
-                  title: 'Lokasi',
+                  title: 'Location',
                   value: location,
                   description:
                       'Informasi lokasi Kedai Ayam Nina yang '

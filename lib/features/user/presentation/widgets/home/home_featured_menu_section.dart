@@ -82,7 +82,7 @@ class HomeFeaturedMenuSection extends StatelessWidget {
               );
 
               final action = AppButton(
-                label: 'Lihat Semua Menu',
+                label: 'Lihat Menu Lengkap',
                 variant: AppButtonVariant.text,
                 size: AppButtonSize.small,
                 trailingIcon: Icons.arrow_forward_rounded,
