@@ -16,6 +16,7 @@ import 'package:kedai_ayam_nina/features/user/presentation/pages/dashboard.dart'
 import 'package:kedai_ayam_nina/features/user/presentation/pages/catalog.dart';
 import 'package:kedai_ayam_nina/features/user/presentation/pages/about_us.dart';
 import 'package:kedai_ayam_nina/features/user/presentation/pages/contact_us.dart';
+import 'package:kedai_ayam_nina/features/user/presentation/widgets/product_detail/product_detail.dart';
 import 'package:kedai_ayam_nina/router/listener_router.dart';
 import 'package:kedai_ayam_nina/router/router.dart';
 
@@ -59,7 +60,12 @@ class AppRouter {
           name: MyRoute.detail.name,
           path: MyRoute.detail.path,
           builder: (context, state) {
-            final product = state.extra as Product;
+            final product = state.extra;
+
+            if (product is! Product) {
+              return const ProductDetailUnavailablePage();
+            }
+
             return DetailProductUserPage(product: product);
           },
         ),
