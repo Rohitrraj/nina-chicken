@@ -37,5 +37,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/images/nina/
     - assets/Logo-C1.png
+    - assets/about/about-hero.jpg
+    - assets/about/about-family-story.jpg
   

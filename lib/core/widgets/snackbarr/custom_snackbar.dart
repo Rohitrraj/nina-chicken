@@ -1,75 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:kedai_ayam_nina/core/constant/enum.dart';
+import 'package:kedai_ayam_nina/core/widgets/feedback/app_snackbar.dart';
 
+/// Compatibility wrapper.
+///
+/// Call site lama yang menggunakan CustomSnackbar tetap berjalan,
+/// tetapi tampilan snackbar sekarang mengikuti komponen feedback baru.
 class CustomSnackbar extends SnackBar {
-  final String message;
-  final SnackBarState state;
-
-  CustomSnackbar({super.key, required this.message, required this.state})
-    : super(
-        // Kita atur konfigurasi SnackBar-nya di sini
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        behavior: SnackBarBehavior.floating,
-        content: _SnackbarDesign(message: message, state: state),
-      );
+  CustomSnackbar({
+    super.key,
+    required String message,
+    required SnackBarState state,
+  }) : super(
+         backgroundColor: Colors.transparent,
+         elevation: 0,
+         behavior: SnackBarBehavior.floating,
+         padding: EdgeInsets.zero,
+         margin: const EdgeInsets.all(16),
+         dismissDirection: DismissDirection.horizontal,
+         content: AppSnackbarContent(
+           message: message,
+           type: _mapSnackbarType(state),
+         ),
+       );
 }
 
-class _SnackbarDesign extends StatelessWidget {
-  final String message;
-  final SnackBarState state;
+AppSnackbarType _mapSnackbarType(SnackBarState state) {
+  switch (state) {
+    case SnackBarState.success:
+      return AppSnackbarType.success;
 
-  const _SnackbarDesign({required this.message, required this.state});
+    case SnackBarState.error:
+      return AppSnackbarType.error;
 
-  Color _getBackgroundColor() {
-    switch (state) {
-      case SnackBarState.success:
-        return const Color.fromARGB(255, 65, 134, 67);
-      case SnackBarState.error:
-        return const Color.fromARGB(255, 184, 75, 67);
-      case SnackBarState.info:
-        return const Color.fromARGB(255, 68, 151, 219);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: _getBackgroundColor(),
-        borderRadius: BorderRadius.circular(8.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(_getIcon(), color: Colors.white),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              message,
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  IconData _getIcon() {
-    switch (state) {
-      case SnackBarState.success:
-        return Icons.check_circle_outline;
-      case SnackBarState.error:
-        return Icons.error_outline;
-      case SnackBarState.info:
-        return Icons.info_outline;
-    }
+    case SnackBarState.info:
+      return AppSnackbarType.info;
   }
 }

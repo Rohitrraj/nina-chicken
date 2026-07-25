@@ -1,108 +1,91 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:kedai_ayam_nina/core/design_system/design_system.dart';
 import 'package:kedai_ayam_nina/core/widgets/animated_scroll_item.dart';
-import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_navbar.dart';
-import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_footer.dart';
+import 'package:kedai_ayam_nina/core/widgets/feedback/feedback.dart';
+import 'package:kedai_ayam_nina/features/user/presentation/widgets/contact/contact.dart';
 import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_drawer.dart';
+import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_footer.dart';
+import 'package:kedai_ayam_nina/features/user/presentation/widgets/user_navbar.dart';
 
 class ContactUsPage extends StatelessWidget {
   const ContactUsPage({super.key});
 
+  static const String _phoneNumber = '+62 895-3832-05337';
+
+  static const String _location =
+      '5 Jalan Anyar Raya No. 46B, RT.7/RW.10, '
+      'Wijaya Kusuma, Kec. Grogol Petamburan, '
+      'Kota Jakarta Barat, Daerah Khusus Ibukota '
+      'Jakarta 11460';
+
+  static const String _operatingHours = 'Setiap hari, 10.00 - 22.00';
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= 800;
+    final viewportWidth = MediaQuery.sizeOf(context).width;
+    final isDesktop = AppBreakpoints.isDesktopWidth(viewportWidth);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFBF0),
+      backgroundColor: theme.brightness == Brightness.light
+          ? AppColors.publicBackground
+          : theme.scaffoldBackgroundColor,
       drawer: isDesktop ? null : const UserDrawer(),
-      bottomNavigationBar: UserFooter(isDesktop: isDesktop),
       body: CustomScrollView(
         slivers: [
           UserNavBar(isDesktop: isDesktop),
+          const SliverToBoxAdapter(
+            child: AnimatedScrollItem(
+              id: 'contact_header',
+              child: ContactHeaderSection(),
+            ),
+          ),
           SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isDesktop ? 64.0 : 24.0,
-                vertical: 48.0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AnimatedScrollItem(
-                    id: 'contact_title',
-                    child: const Text(
-                      "Contact Us",
-                      style: TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -1,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  AnimatedScrollItem(
-                    id: 'contact_desc',
-                    child: const Text(
-                      "Punya pertanyaan atau masukan? Jangan ragu untuk menghubungi kami.",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.black87,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                 
-                  const SizedBox(height: 16),
-                  AnimatedScrollItem(id: 'contact_card_phone', child: _buildContactCard(Icons.phone, "Phone", "+62 895-3832-05337")),
-                  const SizedBox(height: 16),
-                  AnimatedScrollItem(id: 'contact_card_loc', child: _buildContactCard(Icons.location_on, "Location", "Jakarta Barat, Indonesia")),
-                ],
+            child: AnimatedScrollItem(
+              id: 'contact_information',
+              child: ContactInformationPanel(
+                phoneNumber: _phoneNumber,
+                location: _location,
+                operatingHours: _operatingHours,
+                onCopyPhone: () {
+                  _copyText(
+                    context,
+                    value: _phoneNumber,
+                    successMessage: 'Nomor telepon berhasil disalin',
+                  );
+                },
+                onCopyLocation: () {
+                  _copyText(
+                    context,
+                    value: _location,
+                    successMessage: 'Informasi lokasi berhasil disalin',
+                  );
+                },
               ),
             ),
           ),
-          
+          SliverToBoxAdapter(child: UserFooter(isDesktop: isDesktop)),
         ],
       ),
     );
   }
 
-  Widget _buildContactCard(IconData icon, String title, String content) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFDFBF0),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: const Color(0xFF8B4513)),
-          ),
-          const SizedBox(width: 24),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                content,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-            ],
-          )
-        ],
-      ),
+  static Future<void> _copyText(
+    BuildContext context, {
+    required String value,
+    required String successMessage,
+  }) async {
+    await Clipboard.setData(ClipboardData(text: value));
+
+    if (!context.mounted) {
+      return;
+    }
+
+    AppSnackbar.show(
+      context,
+      message: successMessage,
+      type: AppSnackbarType.success,
     );
   }
 }
