@@ -14,9 +14,10 @@ import '../bloc/product_mutation_bloc.dart';
 import '../models/product_mutation_input.dart';
 
 class ProductMutationPage extends StatefulWidget {
-  const ProductMutationPage({super.key, this.product});
+  const ProductMutationPage({super.key, this.product, this.mutationBloc});
 
   final Product? product;
+  final ProductMutationBloc? mutationBloc;
 
   @override
   State<ProductMutationPage> createState() => _ProductMutationPageState();
@@ -291,7 +292,7 @@ class _ProductMutationPageState extends State<ProductMutationPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<ProductMutationBloc>(
-      create: (_) => getIt<ProductMutationBloc>(),
+      create: (_) => widget.mutationBloc ?? getIt<ProductMutationBloc>(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
@@ -877,45 +878,61 @@ class _ImagePlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return ColoredBox(
       color: AppColors.surfaceMuted,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 58,
-                height: 58,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary50,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.add_photo_alternate_outlined,
-                  color: AppColors.primary700,
-                  size: 29,
-                ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxHeight < 210;
+          final iconContainerSize = compact ? 48.0 : 58.0;
+          final iconSize = compact ? 24.0 : 29.0;
+
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: iconContainerSize,
+                    height: iconContainerSize,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.add_photo_alternate_outlined,
+                      color: AppColors.primary700,
+                      size: iconSize,
+                    ),
+                  ),
+                  SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
+                  Text(
+                    'Pilih Foto Produk',
+                    textAlign: TextAlign.center,
+                    style:
+                        (compact
+                                ? Theme.of(context).textTheme.titleSmall
+                                : Theme.of(context).textTheme.titleMedium)
+                            ?.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w800,
+                            ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Klik untuk memilih gambar dari perangkat.',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: compact ? 1.3 : 1.4,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                'Pilih Foto Produk',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Klik untuk memilih gambar dari perangkat.',
-                textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

@@ -9,7 +9,9 @@ import 'package:kedai_ayam_nina/features/produk/domain/entities/product.dart';
 import '../bloc/product_catalog_bloc.dart';
 
 class ProductCatalogPage extends StatefulWidget {
-  const ProductCatalogPage({super.key});
+  const ProductCatalogPage({super.key, this.catalogBloc});
+
+  final ProductCatalogBloc? catalogBloc;
 
   @override
   State<ProductCatalogPage> createState() => _ProductCatalogPageState();
@@ -28,7 +30,7 @@ class _ProductCatalogPageState extends State<ProductCatalogPage> {
   void initState() {
     super.initState();
 
-    _catalogBloc = getIt<ProductCatalogBloc>();
+    _catalogBloc = widget.catalogBloc ?? getIt<ProductCatalogBloc>();
 
     if (_catalogBloc.state is ProductCatalogInitial) {
       _loadProducts();
