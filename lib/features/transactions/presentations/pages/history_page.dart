@@ -235,75 +235,27 @@ class _HistoryPageState extends State<HistoryPage> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: Column(
-                    children: [
-                      GestureDetector(
-                        onTap: isDeleting
-                            ? null
-                            : () {
-                                _showEditDialog(context, transaction);
-                              },
-                        child: CardHistoryItem(
-                          isPengeluaran:
-                              transaction.jenis == JenisTransaksi.pengeluaran,
-                          tittle: transaction.kategori.label,
-                          date: _formatDate(transaction.tanggal),
-                          nominal: formatRupiah(transaction.nominal),
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Tooltip(
-                            message: 'Edit transaksi',
-                            child: IconButton(
-                              key: ValueKey<String>(
-                                'transaction-edit-'
-                                '${transaction.id}',
-                              ),
-                              onPressed: isDeleting
-                                  ? null
-                                  : () {
-                                      _showEditDialog(context, transaction);
-                                    },
-                              constraints: const BoxConstraints(
-                                minWidth: 48,
-                                minHeight: 48,
-                              ),
-                              icon: const Icon(Icons.edit_outlined),
-                            ),
-                          ),
-                          Tooltip(
-                            message: 'Hapus transaksi',
-                            child: IconButton(
-                              key: ValueKey<String>(
-                                'transaction-delete-'
-                                '${transaction.id}',
-                              ),
-                              onPressed: isDeleting
-                                  ? null
-                                  : () {
-                                      _confirmAndDelete(context, transaction);
-                                    },
-                              constraints: const BoxConstraints(
-                                minWidth: 48,
-                                minHeight: 48,
-                              ),
-                              color: Colors.red,
-                              icon: isDeleting
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Icon(Icons.delete_outline),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  child: GestureDetector(
+                    onTap: isDeleting
+                        ? null
+                        : () {
+                            _showEditDialog(context, transaction);
+                          },
+                    child: CardHistoryItem(
+                      transactionId: transaction.id,
+                      isPengeluaran:
+                          transaction.jenis == JenisTransaksi.pengeluaran,
+                      tittle: transaction.kategori.label,
+                      date: _formatDate(transaction.tanggal),
+                      nominal: formatRupiah(transaction.nominal),
+                      isDeleting: isDeleting,
+                      onEdit: () {
+                        _showEditDialog(context, transaction);
+                      },
+                      onDelete: () {
+                        _confirmAndDelete(context, transaction);
+                      },
+                    ),
                   ),
                 ),
               );

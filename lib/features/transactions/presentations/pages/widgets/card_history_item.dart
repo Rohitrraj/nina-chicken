@@ -7,6 +7,10 @@ class CardHistoryItem extends StatelessWidget {
     required this.tittle,
     required this.date,
     required this.nominal,
+    this.transactionId,
+    this.onEdit,
+    this.onDelete,
+    this.isDeleting = false,
   });
 
   final bool isPengeluaran;
@@ -14,8 +18,15 @@ class CardHistoryItem extends StatelessWidget {
   final String date;
   final String nominal;
 
+  final String? transactionId;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+  final bool isDeleting;
+
   @override
   Widget build(BuildContext context) {
+    final valueColor = isPengeluaran ? Colors.red : Colors.green;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(8),
@@ -30,7 +41,7 @@ class CardHistoryItem extends StatelessWidget {
               foregroundColor: Theme.of(context).colorScheme.onSurface,
               child: Icon(
                 isPengeluaran ? Icons.arrow_upward : Icons.arrow_downward,
-                color: isPengeluaran ? Colors.red : Colors.green,
+                color: valueColor,
               ),
             ),
             Expanded(
@@ -49,13 +60,61 @@ class CardHistoryItem extends StatelessWidget {
                 ],
               ),
             ),
-            Text(
-              nominal,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: isPengeluaran ? Colors.red : Colors.green,
-                fontWeight: FontWeight.bold,
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 112),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(
+                  nominal,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: valueColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
+            if (onEdit != null)
+              Tooltip(
+                message: 'Edit transaksi',
+                child: IconButton(
+                  key: ValueKey<String>(
+                    'transaction-edit-'
+                    '${transactionId ?? tittle}',
+                  ),
+                  onPressed: isDeleting ? null : onEdit,
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.edit_outlined, size: 20),
+                ),
+              ),
+            if (onDelete != null)
+              Tooltip(
+                message: 'Hapus transaksi',
+                child: IconButton(
+                  key: ValueKey<String>(
+                    'transaction-delete-'
+                    '${transactionId ?? tittle}',
+                  ),
+                  onPressed: isDeleting ? null : onDelete,
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  color: Colors.red,
+                  icon: isDeleting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.delete_outline, size: 20),
+                ),
+              ),
           ],
         ),
       ),
