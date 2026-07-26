@@ -332,7 +332,7 @@ class _ProductCatalogPageState extends State<ProductCatalogPage> {
                   padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                     maxCrossAxisExtent: 360,
-                    mainAxisExtent: 390,
+                    mainAxisExtent: 440,
                     crossAxisSpacing: AppSpacing.md,
                     mainAxisSpacing: AppSpacing.md,
                   ),
