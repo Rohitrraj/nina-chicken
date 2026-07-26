@@ -52,3 +52,9 @@ firebase-adminsdk-*.json
 .vercel
 firebase-admin.json
 .env*
+
+# Allow safe environment templates
+!.env.example
+!.env.sample
+!.env.template
+!.env.*.example
