@@ -3,6 +3,8 @@ import 'package:kedai_ayam_nina/core/design_system/design_system.dart';
 import 'package:kedai_ayam_nina/core/widgets/forms/forms.dart';
 import 'package:kedai_ayam_nina/core/widgets/layout/layout.dart';
 
+import 'package:kedai_ayam_nina/features/user/presentation/utils/product_category_label.dart';
+
 class CatalogToolbar extends StatelessWidget {
   const CatalogToolbar({
     super.key,
@@ -134,7 +136,7 @@ class _CatalogCategoryChip extends StatelessWidget {
               vertical: AppSpacing.sm,
             ),
             child: Text(
-              category,
+              ProductCategoryLabel.display(category),
               style: theme.textTheme.labelLarge?.copyWith(
                 color: selected
                     ? theme.colorScheme.onPrimary

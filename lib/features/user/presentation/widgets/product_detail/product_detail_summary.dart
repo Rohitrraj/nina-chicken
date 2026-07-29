@@ -4,6 +4,8 @@ import 'package:kedai_ayam_nina/core/utils/rupiah_formatter.dart';
 import 'package:kedai_ayam_nina/core/widgets/card/cards.dart';
 import 'package:kedai_ayam_nina/features/produk/domain/entities/product.dart';
 
+import 'package:kedai_ayam_nina/features/user/presentation/utils/product_category_label.dart';
+
 class ProductDetailSummary extends StatelessWidget {
   const ProductDetailSummary({super.key, required this.product});
 
@@ -12,7 +14,7 @@ class ProductDetailSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final category = _formatCategory(product.category);
+    final category = ProductCategoryLabel.display(product.category);
 
     final shortDescription = product.shortDescription.trim().isNotEmpty
         ? product.shortDescription.trim()
@@ -75,26 +77,5 @@ class ProductDetailSummary extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  static String _formatCategory(String value) {
-    final trimmed = value.trim();
-
-    if (trimmed.isEmpty) {
-      return 'Menu';
-    }
-
-    return trimmed
-        .split(RegExp(r'\s+'))
-        .where((word) => word.isNotEmpty)
-        .map((word) {
-          final lowerWord = word.toLowerCase();
-
-          return lowerWord.length == 1
-              ? lowerWord.toUpperCase()
-              : '${lowerWord[0].toUpperCase()}'
-                    '${lowerWord.substring(1)}';
-        })
-        .join(' ');
   }
 }

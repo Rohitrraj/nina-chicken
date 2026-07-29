@@ -6,6 +6,8 @@ import 'package:kedai_ayam_nina/features/produk/domain/entities/product.dart';
 
 import 'package:kedai_ayam_nina/core/widgets/images/optimized_network_image.dart';
 
+import 'package:kedai_ayam_nina/features/user/presentation/utils/product_category_label.dart';
+
 class CatalogProductCard extends StatelessWidget {
   const CatalogProductCard({
     super.key,
@@ -20,9 +22,7 @@ class CatalogProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final category = product.category.trim().isEmpty
-        ? 'Menu'
-        : product.category.trim();
+    final category = ProductCategoryLabel.display(product.category);
 
     final description = product.shortDescription.trim().isNotEmpty
         ? product.shortDescription.trim()
