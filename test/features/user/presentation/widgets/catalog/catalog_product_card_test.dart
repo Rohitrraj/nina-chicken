@@ -41,7 +41,7 @@ void main() {
     );
 
     expect(find.text('Ayam Penyet'), findsOneWidget);
-    expect(find.text('Food'), findsOneWidget);
+    expect(find.text('Makanan'), findsOneWidget);
     expect(find.text('Rp 25.000'), findsOneWidget);
 
     await tester.tap(

@@ -6,6 +6,8 @@ import 'package:kedai_ayam_nina/features/produk/domain/entities/product.dart';
 
 import 'package:kedai_ayam_nina/core/widgets/images/optimized_network_image.dart';
 
+import 'package:kedai_ayam_nina/features/user/presentation/utils/product_category_label.dart';
+
 class HomeProductCard extends StatelessWidget {
   const HomeProductCard({
     super.key,
@@ -55,7 +57,7 @@ class HomeProductCard extends StatelessWidget {
                       borderRadius: AppRadius.pill,
                     ),
                     child: Text(
-                      product.category,
+                      ProductCategoryLabel.display(product.category),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.labelSmall?.copyWith(
