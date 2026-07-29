@@ -23,6 +23,9 @@
   "homepage": "https://github.com/Rohitrraj/nina-chicken#readme",
   "dependencies": {
     "cloudinary": "^2.10.0",
-    "firebase-admin": "^14.2.0"
+    "firebase-admin": "13.10.0"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }
