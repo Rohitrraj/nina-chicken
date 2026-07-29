@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +10,8 @@ import '../../domain/entities/product.dart';
 import '../bloc/product_catalog_bloc.dart';
 import '../bloc/product_mutation_bloc.dart';
 import '../models/product_mutation_input.dart';
+
+import 'package:kedai_ayam_nina/core/widgets/images/optimized_network_image.dart';
 
 class ProductMutationPage extends StatefulWidget {
   const ProductMutationPage({super.key, this.product, this.mutationBloc});
@@ -96,7 +96,9 @@ class _ProductMutationPageState extends State<ProductMutationPage> {
     try {
       final image = await _imagePicker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 90,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 82,
       );
 
       if (image == null) {
@@ -187,7 +189,7 @@ class _ProductMutationPageState extends State<ProductMutationPage> {
   }
 
   void _handleSuccess(BuildContext context) {
-    getIt<ProductCatalogBloc>().add(LoadProducts());
+    getIt<ProductCatalogBloc>().add(const LoadProducts(forceRefresh: true));
 
     _showMessage(
       context,
@@ -802,7 +804,7 @@ class _ProductImagePicker extends StatelessWidget {
                             semanticLabel: 'Preview foto produk baru',
                           )
                         else if (_hasExistingImage)
-                          Image.network(
+                          OptimizedNetworkImage(
                             existingImageUrl,
                             fit: BoxFit.cover,
                             semanticLabel: 'Foto produk saat ini',

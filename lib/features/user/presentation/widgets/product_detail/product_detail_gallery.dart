@@ -3,6 +3,8 @@ import 'package:kedai_ayam_nina/core/assets.dart';
 import 'package:kedai_ayam_nina/core/design_system/design_system.dart';
 import 'package:kedai_ayam_nina/core/widgets/card/cards.dart';
 
+import 'package:kedai_ayam_nina/core/widgets/images/optimized_network_image.dart';
+
 typedef ProductDetailImageBuilder =
     Widget Function(BuildContext context, String imageUrl, BoxFit fit);
 
@@ -204,7 +206,7 @@ class _NetworkProductImage extends StatelessWidget {
       return const _ProductImageFallback();
     }
 
-    return Image.network(
+    return OptimizedNetworkImage(
       imageUrl,
       fit: fit,
       filterQuality: FilterQuality.medium,

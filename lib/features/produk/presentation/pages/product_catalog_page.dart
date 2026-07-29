@@ -8,6 +8,8 @@ import 'package:kedai_ayam_nina/features/produk/domain/entities/product.dart';
 
 import '../bloc/product_catalog_bloc.dart';
 
+import 'package:kedai_ayam_nina/core/widgets/images/optimized_network_image.dart';
+
 class ProductCatalogPage extends StatefulWidget {
   const ProductCatalogPage({super.key, this.catalogBloc});
 
@@ -43,8 +45,8 @@ class _ProductCatalogPageState extends State<ProductCatalogPage> {
     super.dispose();
   }
 
-  void _loadProducts() {
-    _catalogBloc.add(LoadProducts());
+  void _loadProducts({bool forceRefresh = false}) {
+    _catalogBloc.add(LoadProducts(forceRefresh: forceRefresh));
   }
 
   List<String> _categories(List<Product> products) {
@@ -208,7 +210,9 @@ class _ProductCatalogPageState extends State<ProductCatalogPage> {
                           onAddProduct: () {
                             context.go('/admin/catalog/mutation');
                           },
-                          onRefresh: _loadProducts,
+                          onRefresh: () {
+                            _loadProducts(forceRefresh: true);
+                          },
                         ),
                         const SizedBox(height: AppSpacing.xl),
                         Expanded(
@@ -244,7 +248,9 @@ class _ProductCatalogPageState extends State<ProductCatalogPage> {
 
                                   if (state is ProductCatalogError) {
                                     return _CatalogErrorState(
-                                      onRetry: _loadProducts,
+                                      onRetry: () {
+                                        _loadProducts(forceRefresh: true);
+                                      },
                                     );
                                   }
 
@@ -626,7 +632,7 @@ class _AdminProductCard extends StatelessWidget {
                 SizedBox(
                   height: 190,
                   child: imageUrl.startsWith('http')
-                      ? Image.network(
+                      ? OptimizedNetworkImage(
                           imageUrl,
                           fit: BoxFit.cover,
                           semanticLabel: 'Foto produk ${product.name}',

@@ -7,6 +7,8 @@ import 'package:kedai_ayam_nina/dependency_injection/dependency_injection.dart';
 import 'package:kedai_ayam_nina/features/produk/domain/entities/product.dart';
 import 'package:kedai_ayam_nina/features/produk/presentation/bloc/product_catalog_bloc.dart';
 
+import 'package:kedai_ayam_nina/core/widgets/images/optimized_network_image.dart';
+
 class DetailProductPage extends StatefulWidget {
   const DetailProductPage({super.key, required this.product, this.catalogBloc});
 
@@ -379,7 +381,7 @@ class _ProductImageSection extends StatelessWidget {
               borderRadius: AppRadius.md,
               child: images.isEmpty
                   ? const _ProductImageFallback()
-                  : Image.network(
+                  : OptimizedNetworkImage(
                       images[safeIndex],
                       key: ValueKey<String>(
                         'product-detail-main-image-${images[safeIndex]}',
@@ -448,7 +450,7 @@ class _ProductImageSection extends StatelessWidget {
                           ),
                           child: ClipRRect(
                             borderRadius: AppRadius.sm,
-                            child: Image.network(
+                            child: OptimizedNetworkImage(
                               images[index],
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
