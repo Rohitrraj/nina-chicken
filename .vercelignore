@@ -1,0 +1,14 @@
+.git
+.github
+.dart_tool
+build
+coverage
+test
+.vercel
+.env
+.env.*
+firebase-admin.json
+firebase-adminsdk-*.json
+*service-account*.json
+*.log
+.DS_Store
