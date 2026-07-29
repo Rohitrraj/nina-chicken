@@ -244,6 +244,8 @@ class _CatalogPageState extends State<CatalogPage> {
   }
 
   void _reloadProducts() {
-    context.read<ProductCatalogBloc>().add(LoadProducts());
+    context.read<ProductCatalogBloc>().add(
+      const LoadProducts(forceRefresh: true),
+    );
   }
 }

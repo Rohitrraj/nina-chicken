@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kedai_ayam_nina/core/assets.dart';
+import 'package:kedai_ayam_nina/core/design_system/design_system.dart';
 import 'package:kedai_ayam_nina/features/auth/presentations/bloc/auth_bloc.dart';
 
 class AdminShellProvider extends InheritedWidget {
-  final StatefulNavigationShell navigationShell;
-
   const AdminShellProvider({
     super.key,
     required this.navigationShell,
     required super.child,
   });
 
+  final StatefulNavigationShell navigationShell;
+
   static StatefulNavigationShell of(BuildContext context) {
     final provider = context
         .dependOnInheritedWidgetOfExactType<AdminShellProvider>();
+
     if (provider == null) {
-      throw Exception('AdminShellProvider not found in context');
+      throw StateError('AdminShellProvider tidak ditemukan dalam context.');
     }
+
     return provider.navigationShell;
   }
 
@@ -29,36 +33,87 @@ class AdminShellProvider extends InheritedWidget {
 }
 
 class MainScaffoldAdmin extends StatelessWidget {
+  const MainScaffoldAdmin({super.key, required this.navigationShell});
+
   final StatefulNavigationShell navigationShell;
 
-  const MainScaffoldAdmin({super.key, required this.navigationShell});
+  static const List<_AdminDestination> _destinations = [
+    _AdminDestination(
+      branchIndex: 3,
+      icon: Icons.analytics_outlined,
+      selectedIcon: Icons.analytics_rounded,
+      label: 'Analitik',
+      description: 'Ringkasan dan pertumbuhan keuangan',
+    ),
+    _AdminDestination(
+      branchIndex: 1,
+      icon: Icons.inventory_2_outlined,
+      selectedIcon: Icons.inventory_2_rounded,
+      label: 'Produk',
+      description: 'Kelola katalog menu',
+    ),
+    _AdminDestination(
+      branchIndex: 2,
+      icon: Icons.receipt_long_outlined,
+      selectedIcon: Icons.receipt_long_rounded,
+      label: 'Buku Kas',
+      description: 'Catat pemasukan dan pengeluaran',
+    ),
+    _AdminDestination(
+      branchIndex: 0,
+      icon: Icons.history_outlined,
+      selectedIcon: Icons.history_rounded,
+      label: 'Riwayat',
+      description: 'Lihat dan kelola transaksi',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width >= 800;
+    final viewportWidth = MediaQuery.sizeOf(context).width;
+    final isDesktop = AppBreakpoints.isDesktopWidth(viewportWidth);
+
+    final drawerWidth = viewportWidth < 360 ? viewportWidth * 0.90 : 320.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFBF0),
+      backgroundColor: AppColors.background,
       appBar: isDesktop
           ? null
           : AppBar(
-              backgroundColor: const Color(0xFFF2EFE5),
+              backgroundColor: AppColors.surface,
+              foregroundColor: AppColors.primary700,
+              surfaceTintColor: Colors.transparent,
               elevation: 0,
-              iconTheme: const IconThemeData(color: Color(0xFF8B4513)),
-              title: const Text(
-                "Nina's Kitchen",
-                style: TextStyle(
-                  color: Color(0xFF8B4513),
-                  fontWeight: FontWeight.bold,
+              scrolledUnderElevation: 1,
+              titleSpacing: AppSpacing.xs,
+              title: Text(
+                'Kedai Ayam Nina',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: AppColors.primary700,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
       drawer: isDesktop
           ? null
-          : Drawer(
-              child: Container(
-                color: const Color(0xFFF2EFE5),
-                child: _buildSidebarContent(context, true),
+          : SizedBox(
+              width: drawerWidth,
+              child: Drawer(
+                backgroundColor: AppColors.surface,
+                surfaceTintColor: Colors.transparent,
+                child: SafeArea(
+                  child: _AdminSidebar(
+                    destinations: _destinations,
+                    currentIndex: navigationShell.currentIndex,
+                    isDrawer: true,
+                    onSelected: (index) {
+                      _selectBranch(context, index, closeDrawer: true);
+                    },
+                    onLogout: () {
+                      _logout(context, closeDrawer: true);
+                    },
+                  ),
+                ),
               ),
             ),
       body: AdminShellProvider(
@@ -66,174 +121,317 @@ class MainScaffoldAdmin extends StatelessWidget {
         child: isDesktop
             ? Row(
                 children: [
-                  Container(
-                    width: 260,
-                    color: const Color(0xFFF2EFE5),
-                    child: _buildSidebarContent(context, false),
+                  SizedBox(
+                    width: 280,
+                    child: ColoredBox(
+                      color: AppColors.surface,
+                      child: SafeArea(
+                        child: _AdminSidebar(
+                          destinations: _destinations,
+                          currentIndex: navigationShell.currentIndex,
+                          isDrawer: false,
+                          onSelected: (index) {
+                            _selectBranch(context, index);
+                          },
+                          onLogout: () {
+                            _logout(context);
+                          },
+                        ),
+                      ),
+                    ),
                   ),
-                  Expanded(child: navigationShell),
+                  const VerticalDivider(
+                    width: 1,
+                    thickness: 1,
+                    color: AppColors.border,
+                  ),
+                  Expanded(
+                    child: ColoredBox(
+                      color: AppColors.background,
+                      child: navigationShell,
+                    ),
+                  ),
                 ],
               )
-            : navigationShell,
+            : ColoredBox(color: AppColors.background, child: navigationShell),
       ),
     );
   }
 
-  Widget _buildSidebarContent(BuildContext context, bool isFromDrawer) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Nina's Kitchen",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF8B4513),
-                ),
-              ),
-              Text(
-                "Admin Terminal",
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-        _SidebarItem(
-          icon: Icons.analytics,
-          label: "Kitchen Analytics",
-          isSelected: navigationShell.currentIndex == 3,
-          onTap: () => _handleItemTap(3, context, isFromDrawer),
-        ),
-        _SidebarItem(
-          icon: Icons.restaurant_menu,
-          label: "Product Catalog",
-          isSelected: navigationShell.currentIndex == 1,
-          onTap: () => _handleItemTap(1, context, isFromDrawer),
-        ),
-        _SidebarItem(
-          icon: Icons.receipt_long,
-          label: "Buku Kas",
-          isSelected: navigationShell.currentIndex == 2,
-          onTap: () => _handleItemTap(2, context, isFromDrawer),
-        ),
-        _SidebarItem(
-          icon: Icons.dashboard,
-          label: "History",
-          isSelected: navigationShell.currentIndex == 0,
-          onTap: () => _handleItemTap(0, context, isFromDrawer),
-        ),
-        const Spacer(),
-        const Divider(),
-        _SidebarItem(
-          icon: Icons.logout,
-          label: "Logout",
-          isSelected: false,
-          onTap: () {
-            context.read<AuthBloc>().add(AuthLogout());
-          },
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
+  void _selectBranch(
+    BuildContext context,
+    int index, {
+    bool closeDrawer = false,
+  }) {
+    if (closeDrawer) {
+      Navigator.of(context).pop();
+    }
 
-  void _handleItemTap(int index, BuildContext context, bool isFromDrawer) {
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
     );
-    if (isFromDrawer) {
+  }
+
+  void _logout(BuildContext context, {bool closeDrawer = false}) {
+    if (closeDrawer) {
       Navigator.of(context).pop();
     }
+
+    context.read<AuthBloc>().add(AuthLogout());
   }
 }
 
-class _SidebarItem extends StatefulWidget {
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
+class _AdminSidebar extends StatelessWidget {
+  const _AdminSidebar({
+    required this.destinations,
+    required this.currentIndex,
+    required this.isDrawer,
+    required this.onSelected,
+    required this.onLogout,
+  });
 
-  const _SidebarItem({
-    Key? key,
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  }) : super(key: key);
-
-  @override
-  State<_SidebarItem> createState() => _SidebarItemState();
-}
-
-class _SidebarItemState extends State<_SidebarItem> {
-  bool isHovered = false;
+  final List<_AdminDestination> destinations;
+  final int currentIndex;
+  final bool isDrawer;
+  final ValueChanged<int> onSelected;
+  final VoidCallback onLogout;
 
   @override
   Widget build(BuildContext context) {
-    // Menggunakan warna cokelat primary dari tema kamu
-    const primaryColor = Color(0xFF8B4513);
+    return Column(
+      children: [
+        _AdminIdentity(compact: isDrawer),
+        const Divider(height: 1, color: AppColors.border),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.lg,
+            ),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                child: Text(
+                  'NAVIGASI',
+                  style: AppTypography.sectionEyebrow.copyWith(
+                    color: AppColors.textMuted,
+                    fontSize: 11,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              for (final destination in destinations) ...[
+                _AdminNavigationItem(
+                  destination: destination,
+                  selected: currentIndex == destination.branchIndex,
+                  onTap: () {
+                    onSelected(destination.branchIndex);
+                  },
+                ),
+                const SizedBox(height: AppSpacing.xs),
+              ],
+            ],
+          ),
+        ),
+        const Divider(height: 1, color: AppColors.border),
+        Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: _AdminLogoutButton(onTap: onLogout),
+        ),
+      ],
+    );
+  }
+}
 
-    // Logika warna background (Animasi Hover)
-    final bgColor = widget.isSelected
-        ? primaryColor.withOpacity(0.15) // Warna saat menu aktif
-        : isHovered
-        ? primaryColor.withOpacity(0.05) // Warna samar saat di-hover
-        : Colors.transparent; // Transparan saat diam
+class _AdminIdentity extends StatelessWidget {
+  const _AdminIdentity({required this.compact});
 
-    // Logika warna ikon & teks
-    final contentColor = widget.isSelected
-        ? primaryColor
-        : isHovered
-        ? primaryColor.withOpacity(0.8)
-        : Colors.grey.shade700;
+  final bool compact;
 
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      // MouseRegion untuk mendeteksi kursor (sangat penting untuk Web/Desktop)
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        compact ? AppSpacing.lg : AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            padding: const EdgeInsets.all(AppSpacing.xs),
+            decoration: BoxDecoration(
+              color: AppColors.neutral0,
+              borderRadius: AppRadius.md,
+              border: Border.all(color: AppColors.border),
+              boxShadow: AppShadows.sm,
+            ),
+            child: Image.asset(
+              Assets.logoC1,
+              fit: BoxFit.contain,
+              semanticLabel: 'Logo Kedai Ayam Nina',
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Kedai Ayam Nina',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.primary700,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Panel Administrator',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminNavigationItem extends StatefulWidget {
+  const _AdminNavigationItem({
+    required this.destination,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final _AdminDestination destination;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  State<_AdminNavigationItem> createState() => _AdminNavigationItemState();
+}
+
+class _AdminNavigationItemState extends State<_AdminNavigationItem> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = widget.selected;
+
+    final backgroundColor = selected
+        ? AppColors.primary50
+        : _hovered
+        ? AppColors.surfaceMuted
+        : Colors.transparent;
+
+    final borderColor = selected ? AppColors.primary200 : Colors.transparent;
+
+    final foregroundColor = selected
+        ? AppColors.primary700
+        : _hovered
+        ? AppColors.textPrimary
+        : AppColors.textSecondary;
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: widget.destination.label,
+      hint: widget.destination.description,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => isHovered = true),
-        onExit: (_) => setState(() => isHovered = false),
-        // Material & InkWell untuk animasi klik (Ripple effect)
+        onEnter: (_) {
+          setState(() {
+            _hovered = true;
+          });
+        },
+        onExit: (_) {
+          setState(() {
+            _hovered = false;
+          });
+        },
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () {
-              widget.onTap.call();
-            },
-            borderRadius: BorderRadius.circular(12),
-            splashColor: primaryColor.withOpacity(
-              0.2,
-            ), // Warna cipratan saat diklik
-            highlightColor: Colors.transparent,
+            onTap: widget.onTap,
+            borderRadius: AppRadius.md,
+            focusColor: AppColors.primary50,
+            hoverColor: Colors.transparent,
+            splashColor: AppColors.primary100,
             child: AnimatedContainer(
-              // Durasi animasi background saat di-hover
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.sm,
+              ),
               decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(12),
+                color: backgroundColor,
+                borderRadius: AppRadius.md,
+                border: Border.all(color: borderColor),
               ),
               child: Row(
                 children: [
-                  Icon(widget.icon, color: contentColor, size: 22),
-                  const SizedBox(width: 16),
-                  Text(
-                    widget.label,
-                    style: TextStyle(
-                      color: contentColor,
-                      fontSize: 14,
-                      // Font lebih tebal sedikit kalau sedang dipilih
-                      fontWeight: widget.isSelected
-                          ? FontWeight.bold
-                          : FontWeight.w500,
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? AppColors.primary100
+                          : AppColors.surfaceMuted,
+                      borderRadius: AppRadius.sm,
+                    ),
+                    child: Icon(
+                      selected
+                          ? widget.destination.selectedIcon
+                          : widget.destination.icon,
+                      size: 21,
+                      color: foregroundColor,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.destination.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                color: foregroundColor,
+                                fontWeight: selected
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                              ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.destination.description,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: AppColors.textMuted,
+                                fontSize: 11,
+                              ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -244,4 +442,89 @@ class _SidebarItemState extends State<_SidebarItem> {
       ),
     );
   }
+}
+
+class _AdminLogoutButton extends StatefulWidget {
+  const _AdminLogoutButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  State<_AdminLogoutButton> createState() => _AdminLogoutButtonState();
+}
+
+class _AdminLogoutButtonState extends State<_AdminLogoutButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Keluar dari dashboard admin',
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) {
+          setState(() {
+            _hovered = true;
+          });
+        },
+        onExit: (_) {
+          setState(() {
+            _hovered = false;
+          });
+        },
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: AppRadius.md,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: _hovered ? AppColors.errorSurface : Colors.transparent,
+                borderRadius: AppRadius.md,
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.logout_rounded,
+                    color: AppColors.error,
+                    size: 21,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    'Keluar',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AdminDestination {
+  const _AdminDestination({
+    required this.branchIndex,
+    required this.icon,
+    required this.selectedIcon,
+    required this.label,
+    required this.description,
+  });
+
+  final int branchIndex;
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+  final String description;
 }

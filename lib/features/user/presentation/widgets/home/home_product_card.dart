@@ -4,6 +4,8 @@ import 'package:kedai_ayam_nina/core/design_system/design_system.dart';
 import 'package:kedai_ayam_nina/core/widgets/card/cards.dart';
 import 'package:kedai_ayam_nina/features/produk/domain/entities/product.dart';
 
+import 'package:kedai_ayam_nina/core/widgets/images/optimized_network_image.dart';
+
 class HomeProductCard extends StatelessWidget {
   const HomeProductCard({
     super.key,
@@ -154,7 +156,7 @@ class _ProductImage extends StatelessWidget {
     return Semantics(
       image: true,
       label: 'Foto $productName',
-      child: Image.network(
+      child: OptimizedNetworkImage(
         imageUrl,
         fit: BoxFit.cover,
         filterQuality: FilterQuality.medium,

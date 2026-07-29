@@ -1,472 +1,809 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kedai_ayam_nina/core/design_system/design_system.dart';
+import 'package:kedai_ayam_nina/core/utils/rupiah_formatter.dart';
 import 'package:kedai_ayam_nina/dependency_injection/dependency_injection.dart';
 import 'package:kedai_ayam_nina/features/produk/domain/entities/product.dart';
 import 'package:kedai_ayam_nina/features/produk/presentation/bloc/product_catalog_bloc.dart';
-import 'package:kedai_ayam_nina/features/produk/presentation/bloc/product_mutation_bloc.dart';
 
-class DetailProductPage extends StatelessWidget {
+import 'package:kedai_ayam_nina/core/widgets/images/optimized_network_image.dart';
+
+class DetailProductPage extends StatefulWidget {
+  const DetailProductPage({super.key, required this.product, this.catalogBloc});
+
   final Product product;
+  final ProductCatalogBloc? catalogBloc;
 
-  const DetailProductPage({super.key, required this.product});
+  @override
+  State<DetailProductPage> createState() => _DetailProductPageState();
+}
+
+class _DetailProductPageState extends State<DetailProductPage> {
+  late final ProductCatalogBloc _catalogBloc;
+
+  int _selectedImageIndex = 0;
+  bool _deleting = false;
+
+  Product get _product => widget.product;
+
+  List<String> get _validImages {
+    return _product.imageUrl
+        .map((imageUrl) => imageUrl.trim())
+        .where((imageUrl) => imageUrl.startsWith('http'))
+        .toList(growable: false);
+  }
+
+  String get _categoryLabel {
+    switch (_product.category.trim().toLowerCase()) {
+      case 'food':
+        return 'Makanan';
+      case 'beverage':
+        return 'Minuman';
+      default:
+        final category = _product.category.trim();
+
+        return category.isEmpty ? 'Tanpa kategori' : category;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _catalogBloc = widget.catalogBloc ?? getIt<ProductCatalogBloc>();
+  }
+
+  void _handleBack() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
+    context.go('/admin/catalog');
+  }
+
+  void _openEditPage() {
+    context.go('/admin/catalog/mutation', extra: _product);
+  }
+
+  String _deleteSuccessMessage(String message) {
+    if (message.toLowerCase().contains('cleanup requires review')) {
+      return 'Produk berhasil dihapus, tetapi pembersihan gambar perlu diperiksa.';
+    }
+
+    return 'Produk berhasil dihapus.';
+  }
+
+  void _showMessage({required String message, required bool error}) {
+    final messenger = ScaffoldMessenger.of(context);
+
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: error ? AppColors.error : const Color(0xFF2E7D32),
+        ),
+      );
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          surfaceTintColor: Colors.transparent,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.lg),
+          icon: Container(
+            width: 56,
+            height: 56,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: AppColors.errorSurface,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.delete_outline_rounded,
+              color: AppColors.error,
+              size: 28,
+            ),
+          ),
+          title: const Text('Hapus produk?', textAlign: TextAlign.center),
+          content: Text(
+            'Produk “${_product.name}” akan dihapus dari katalog beserta '
+            'gambar terkait. Tindakan ini tidak dapat dibatalkan.',
+            textAlign: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            OutlinedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: const Text('Batal'),
+            ),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.error,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              icon: const Icon(Icons.delete_outline_rounded),
+              label: const Text('Hapus Produk'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _deleting = true;
+    });
+
+    _catalogBloc.add(DeleteProductEvent(_product));
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    return BlocProvider<ProductCatalogBloc>.value(
+      value: _catalogBloc,
+      child: BlocListener<ProductCatalogBloc, ProductCatalogState>(
+        listener: (context, state) {
+          if (state is ProductCatalogActionSuccess) {
+            _showMessage(
+              message: _deleteSuccessMessage(state.message),
+              error: false,
+            );
 
-    return BlocProvider(
-      create: (_) => getIt<ProductMutationBloc>(),
-      child: Builder(
-        builder: (innerContext) => Scaffold(
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Back button + Title
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: () => Navigator.of(innerContext).pop(),
-                        icon: const Icon(Icons.arrow_back_rounded),
-                        tooltip: "Kembali",
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+            context.go('/admin/catalog');
+            return;
+          }
+
+          if (state is ProductCatalogError && _deleting) {
+            setState(() {
+              _deleting = false;
+            });
+
+            _showMessage(
+              message:
+                  'Produk belum dapat dihapus. Periksa koneksi dan coba kembali.',
+              error: true,
+            );
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.background,
+          body: SafeArea(
+            top: false,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final contentPadding = constraints.maxWidth < 600
+                    ? AppSpacing.md
+                    : constraints.maxWidth < 1100
+                    ? AppSpacing.lg
+                    : AppSpacing.xl;
+
+                return SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                    contentPadding,
+                    AppSpacing.lg,
+                    contentPadding,
+                    AppSpacing.xxl,
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1280),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _DetailHeader(
+                            productName: _product.name,
+                            onBack: _handleBack,
                           ),
-                        ),
+                          const SizedBox(height: AppSpacing.xl),
+                          if (constraints.maxWidth >= 980)
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 5,
+                                  child: _ProductImageSection(
+                                    productName: _product.name,
+                                    images: _validImages,
+                                    selectedIndex: _selectedImageIndex,
+                                    onSelected: (index) {
+                                      setState(() {
+                                        _selectedImageIndex = index;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.lg),
+                                Expanded(
+                                  flex: 5,
+                                  child: _ProductInformationSection(
+                                    product: _product,
+                                    categoryLabel: _categoryLabel,
+                                    deleting: _deleting,
+                                    onEdit: _openEditPage,
+                                    onDelete: _confirmDelete,
+                                  ),
+                                ),
+                              ],
+                            )
+                          else
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _ProductImageSection(
+                                  productName: _product.name,
+                                  images: _validImages,
+                                  selectedIndex: _selectedImageIndex,
+                                  onSelected: (index) {
+                                    setState(() {
+                                      _selectedImageIndex = index;
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                                _ProductInformationSection(
+                                  product: _product,
+                                  categoryLabel: _categoryLabel,
+                                  deleting: _deleting,
+                                  onEdit: _openEditPage,
+                                  onDelete: _confirmDelete,
+                                ),
+                              ],
+                            ),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      Text(
-                        "Detail Produk",
-                        style: theme.textTheme.displayMedium,
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 32),
-
-                  // Main Content: Image + Details side by side
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left: Image Gallery
-                      Expanded(flex: 5, child: _buildImageSection(theme)),
-                      const SizedBox(width: 40),
-
-                      // Right: Product Info
-                      Expanded(
-                        flex: 5,
-                        child: _buildInfoSection(theme, innerContext),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildImageSection(ThemeData theme) {
-    return Column(
+class _DetailHeader extends StatelessWidget {
+  const _DetailHeader({required this.productName, required this.onBack});
+
+  final String productName;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Main Image
-        Container(
-          height: 400,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+        Tooltip(
+          message: 'Kembali ke katalog',
+          child: IconButton(
+            key: const Key('product-detail-back-button'),
+            onPressed: onBack,
+            icon: const Icon(Icons.arrow_back_rounded),
+            style: IconButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              backgroundColor: AppColors.surface,
+              foregroundColor: AppColors.primary700,
+              side: const BorderSide(color: AppColors.border),
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.md),
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary50,
+                  borderRadius: AppRadius.pill,
+                ),
+                child: Text(
+                  'DETAIL PRODUK',
+                  style: AppTypography.sectionEyebrow,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                productName,
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                  height: 1.1,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Periksa informasi produk yang tampil pada katalog pelanggan.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
               ),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child:
-                product.imageUrl.isNotEmpty &&
-                    product.imageUrl.first.startsWith('http')
-                ? Image.network(
-                    product.imageUrl.first,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        _imagePlaceholder(),
-                  )
-                : _imagePlaceholder(),
-          ),
         ),
-        const SizedBox(height: 16),
-
-        // Thumbnail gallery
-        if (product.imageUrl.length > 1)
-          SizedBox(
-            height: 80,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: product.imageUrl.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                return Container(
-                  width: 80,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: index == 0
-                          ? theme.colorScheme.primary
-                          : Colors.grey.shade300,
-                      width: index == 0 ? 2.5 : 1,
-                    ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: product.imageUrl[index].startsWith('http')
-                        ? Image.network(
-                            product.imageUrl[index],
-                            fit: BoxFit.cover,
-                          )
-                        : _imagePlaceholder(size: 30),
-                  ),
-                );
-              },
-            ),
-          ),
       ],
     );
   }
+}
 
-  Widget _buildInfoSection(ThemeData theme, BuildContext context) {
+class _ProductImageSection extends StatelessWidget {
+  const _ProductImageSection({
+    required this.productName,
+    required this.images,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  final String productName;
+  final List<String> images;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final safeIndex = selectedIndex < images.length ? selectedIndex : 0;
+
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: AppColors.surface,
+        borderRadius: AppRadius.lg,
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.sm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Category badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              product.category,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.primary,
-              ),
+          AspectRatio(
+            aspectRatio: 4 / 3,
+            child: ClipRRect(
+              borderRadius: AppRadius.md,
+              child: images.isEmpty
+                  ? const _ProductImageFallback()
+                  : OptimizedNetworkImage(
+                      images[safeIndex],
+                      key: ValueKey<String>(
+                        'product-detail-main-image-${images[safeIndex]}',
+                      ),
+                      fit: BoxFit.cover,
+                      semanticLabel: 'Foto produk $productName',
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) {
+                          return child;
+                        }
+
+                        return const _ProductImageLoading();
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const _ProductImageFallback();
+                      },
+                    ),
             ),
           ),
-          const SizedBox(height: 16),
+          if (images.length > 1) ...[
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Galeri Foto',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            SizedBox(
+              height: 76,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: images.length,
+                separatorBuilder: (_, _) {
+                  return const SizedBox(width: AppSpacing.sm);
+                },
+                itemBuilder: (context, index) {
+                  final selected = index == safeIndex;
 
-          // Product Name
+                  return Semantics(
+                    button: true,
+                    selected: selected,
+                    label: 'Pilih foto ${index + 1} produk $productName',
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: AppRadius.sm,
+                      child: InkWell(
+                        key: ValueKey<String>(
+                          'product-detail-thumbnail-$index',
+                        ),
+                        onTap: () {
+                          onSelected(index);
+                        },
+                        borderRadius: AppRadius.sm,
+                        child: Ink(
+                          width: 76,
+                          decoration: BoxDecoration(
+                            borderRadius: AppRadius.sm,
+                            border: Border.all(
+                              color: selected
+                                  ? AppColors.primary500
+                                  : AppColors.border,
+                              width: selected ? 2 : 1,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: AppRadius.sm,
+                            child: OptimizedNetworkImage(
+                              images[index],
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const _ProductImageFallback(
+                                  iconSize: 24,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ProductInformationSection extends StatelessWidget {
+  const _ProductInformationSection({
+    required this.product,
+    required this.categoryLabel,
+    required this.deleting,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final Product product;
+  final String categoryLabel;
+  final bool deleting;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.lg,
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.sm,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _CategoryBadge(label: categoryLabel),
+          const SizedBox(height: AppSpacing.md),
           Text(
             product.name,
-            style: theme.textTheme.headlineLarge?.copyWith(
-              fontWeight: FontWeight.bold,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w800,
+              height: 1.2,
             ),
           ),
-          const SizedBox(height: 12),
-
-          // Price
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFFF57C00).withValues(alpha: 0.1),
-                  const Color(0xFFFF9800).withValues(alpha: 0.05),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(12),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            formatRupiah(product.price.round()),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: AppColors.primary700,
+              fontWeight: FontWeight.w800,
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.sell_rounded,
-                  color: const Color(0xFFD66B0D),
-                  size: 20,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          const Divider(height: 1, color: AppColors.border),
+          const SizedBox(height: AppSpacing.lg),
+          _DescriptionBlock(
+            title: 'Deskripsi Singkat',
+            description: product.shortDescription,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          _DescriptionBlock(
+            title: 'Deskripsi Lengkap',
+            description: product.description,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          const Divider(height: 1, color: AppColors.border),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Informasi Produk',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _ProductMetadata(
+            category: categoryLabel,
+            imageCount: product.imageUrl.length,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final horizontal = constraints.maxWidth >= 480;
+
+              final editButton = FilledButton.icon(
+                key: const Key('product-detail-edit-button'),
+                onPressed: deleting ? null : onEdit,
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Edit Produk'),
+                style: FilledButton.styleFrom(minimumSize: const Size(0, 50)),
+              );
+
+              final deleteButton = OutlinedButton.icon(
+                key: const Key('product-detail-delete-button'),
+                onPressed: deleting ? null : onDelete,
+                icon: deleting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.error,
+                        ),
+                      )
+                    : const Icon(Icons.delete_outline_rounded),
+                label: Text(deleting ? 'Menghapus...' : 'Hapus Produk'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 50),
+                  foregroundColor: AppColors.error,
+                  side: const BorderSide(color: AppColors.error),
                 ),
-                const SizedBox(width: 8),
+              );
+
+              if (horizontal) {
+                return Row(
+                  children: [
+                    Expanded(child: editButton),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(child: deleteButton),
+                  ],
+                );
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  editButton,
+                  const SizedBox(height: AppSpacing.sm),
+                  deleteButton,
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryBadge extends StatelessWidget {
+  const _CategoryBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: const BoxDecoration(
+        color: AppColors.primary50,
+        borderRadius: AppRadius.pill,
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          color: AppColors.primary700,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _DescriptionBlock extends StatelessWidget {
+  const _DescriptionBlock({required this.title, required this.description});
+
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    final normalizedDescription = description.trim();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          normalizedDescription.isEmpty
+              ? 'Informasi belum tersedia.'
+              : normalizedDescription,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppColors.textSecondary,
+            height: 1.65,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProductMetadata extends StatelessWidget {
+  const _ProductMetadata({required this.category, required this.imageCount});
+
+  final String category;
+  final int imageCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontal = constraints.maxWidth >= 420;
+
+        final categoryItem = _MetadataItem(
+          icon: Icons.category_outlined,
+          label: 'Kategori',
+          value: category,
+        );
+
+        final imageItem = _MetadataItem(
+          icon: Icons.photo_library_outlined,
+          label: 'Jumlah Foto',
+          value: '$imageCount foto',
+        );
+
+        if (horizontal) {
+          return Row(
+            children: [
+              Expanded(child: categoryItem),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(child: imageItem),
+            ],
+          );
+        }
+
+        return Column(
+          children: [
+            categoryItem,
+            const SizedBox(height: AppSpacing.sm),
+            imageItem,
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _MetadataItem extends StatelessWidget {
+  const _MetadataItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceMuted,
+        borderRadius: AppRadius.md,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: AppColors.primary50,
+              borderRadius: AppRadius.sm,
+            ),
+            child: Icon(icon, color: AppColors.primary700, size: 21),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  "Rp ${_formatCurrency(product.price)}",
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFD66B0D),
+                  label,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 28),
-
-          // Divider
-          Divider(color: Colors.grey.shade200),
-          const SizedBox(height: 20),
-
-          // Short Description
-          Text(
-            "Deskripsi Singkat",
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            product.shortDescription,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: Colors.grey.shade700,
-              height: 1.6,
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Full Description
-          Text(
-            "Deskripsi Lengkap",
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            product.description,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.grey.shade600,
-              height: 1.7,
-            ),
-          ),
-          const SizedBox(height: 28),
-
-          // Divider
-          Divider(color: Colors.grey.shade200),
-          const SizedBox(height: 20),
-
-          // Product Info Cards
-          Text(
-            "Informasi Produk",
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              _infoChip(
-                icon: Icons.category_rounded,
-                label: "Kategori",
-                value: product.category,
-                color: const Color(0xFF5D6037),
-                theme: theme,
-              ),
-              const SizedBox(width: 12),
-              _infoChip(
-                icon: Icons.photo_library_rounded,
-                label: "Gambar",
-                value: "${product.imageUrl.length} foto",
-                color: const Color(0xFF1976D2),
-                theme: theme,
-              ),
-            ],
-          ),
-          const SizedBox(height: 28),
-
-          // Action Buttons
-          BlocListener<ProductCatalogBloc, ProductCatalogState>(
-            bloc: getIt<ProductCatalogBloc>(),
-            listener: (context, state) {
-              if (state is ProductCatalogActionSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Produk berhasil dihapus"),
-                    backgroundColor: Color(0xFF2E7D32),
-                  ),
-                );
-                context.go('/admin/catalog');
-              }
-            },
-            child: BlocListener<ProductMutationBloc, ProductMutationState>(
-              listener: (context, state) {
-                if (state is ProductMutationSuccess) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                      backgroundColor: const Color(0xFF2E7D32),
-                    ),
-                  );
-                  // Refresh catalog singleton lalu kembali
-                  getIt<ProductCatalogBloc>().add(LoadProducts());
-                  context.go('/admin/catalog');
-                } else if (state is ProductMutationFailure) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        context.go('/admin/catalog/mutation', extra: product);
-                      },
-                      icon: const Icon(Icons.edit_rounded, size: 18),
-                      label: const Text("Edit Produk"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD66B0D),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (dialogCtx) => AlertDialog(
-                          title: const Text("Hapus Produk"),
-                          content: Text(
-                            "Yakin ingin menghapus \"${product.name}\"?",
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(dialogCtx),
-                              child: const Text("Batal"),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(dialogCtx);
-                                // Pakai ProductCatalogBloc singleton — sudah auto-reload setelah delete
-                                getIt<ProductCatalogBloc>().add(
-                                  DeleteProductEvent(product),
-                                );
-                              },
-                              child: const Text(
-                                "Hapus",
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                    label: const Text("Hapus"),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red.shade600,
-                      side: BorderSide(color: Colors.red.shade300),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 24,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _infoChip({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-    required ThemeData theme,
-  }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: color,
-                  ),
-                ),
-              ],
-            ),
-          ],
+class _ProductImageLoading extends StatelessWidget {
+  const _ProductImageLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(
+      color: AppColors.surfaceMuted,
+      child: Center(child: CircularProgressIndicator()),
+    );
+  }
+}
+
+class _ProductImageFallback extends StatelessWidget {
+  const _ProductImageFallback({this.iconSize = 48});
+
+  final double iconSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: AppColors.surfaceMuted,
+      child: Center(
+        child: Icon(
+          Icons.fastfood_rounded,
+          color: AppColors.textMuted,
+          size: iconSize,
         ),
       ),
     );
-  }
-
-  Widget _imagePlaceholder({double size = 50}) {
-    return Center(
-      child: Icon(
-        Icons.fastfood_rounded,
-        color: Colors.grey.shade400,
-        size: size,
-      ),
-    );
-  }
-
-  String _formatCurrency(double value) {
-    final str = value.toStringAsFixed(0);
-    final result = StringBuffer();
-    int count = 0;
-    for (int i = str.length - 1; i >= 0; i--) {
-      result.write(str[i]);
-      count++;
-      if (count % 3 == 0 && i != 0) {
-        result.write('.');
-      }
-    }
-    return result.toString().split('').reversed.join();
   }
 }

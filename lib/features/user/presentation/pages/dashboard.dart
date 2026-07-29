@@ -112,7 +112,9 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void _reloadProducts() {
-    context.read<ProductCatalogBloc>().add(LoadProducts());
+    context.read<ProductCatalogBloc>().add(
+      const LoadProducts(forceRefresh: true),
+    );
   }
 
   void _openCatalog() {

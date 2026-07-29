@@ -14,7 +14,14 @@ abstract class ProductCatalogEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadProducts extends ProductCatalogEvent {}
+class LoadProducts extends ProductCatalogEvent {
+  const LoadProducts({this.forceRefresh = false});
+
+  final bool forceRefresh;
+
+  @override
+  List<Object?> get props => [forceRefresh];
+}
 
 class DeleteProductEvent extends ProductCatalogEvent {
   final Product product;
@@ -67,9 +74,23 @@ class ProductCatalogActionSuccess extends ProductCatalogState {
 // BLOC
 class ProductCatalogBloc
     extends Bloc<ProductCatalogEvent, ProductCatalogState> {
+  static const Duration cacheLifetime = Duration(minutes: 5);
+
   final GetProducts getProducts;
   final DeleteProduct deleteProduct;
   final CloudinaryImageDatasource cloudinaryImageDatasource;
+
+  List<Product>? _cachedProducts;
+  DateTime? _lastLoadedAt;
+
+  bool get _hasFreshCache {
+    final cachedProducts = _cachedProducts;
+    final lastLoadedAt = _lastLoadedAt;
+
+    return cachedProducts != null &&
+        lastLoadedAt != null &&
+        DateTime.now().difference(lastLoadedAt) < cacheLifetime;
+  }
 
   ProductCatalogBloc({
     required this.getProducts,
@@ -84,10 +105,23 @@ class ProductCatalogBloc
     LoadProducts event,
     Emitter<ProductCatalogState> emit,
   ) async {
+    if (!event.forceRefresh && _hasFreshCache) {
+      final cachedState = ProductCatalogLoaded(_cachedProducts!);
+
+      if (state != cachedState) {
+        emit(cachedState);
+      }
+
+      return;
+    }
+
     emit(ProductCatalogLoading());
 
     try {
-      final products = await getProducts();
+      final products = List<Product>.unmodifiable(await getProducts());
+
+      _cachedProducts = products;
+      _lastLoadedAt = DateTime.now();
 
       emit(ProductCatalogLoaded(products));
     } catch (error) {
@@ -112,9 +146,12 @@ class ProductCatalogBloc
         product.imagePublicIds,
       );
 
-      final updatedProducts = previousProducts
-          .where((item) => item.id != product.id)
-          .toList(growable: false);
+      final updatedProducts = List<Product>.unmodifiable(
+        previousProducts.where((item) => item.id != product.id),
+      );
+
+      _cachedProducts = updatedProducts;
+      _lastLoadedAt = DateTime.now();
 
       emit(
         ProductCatalogActionSuccess(

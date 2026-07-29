@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:kedai_ayam_nina/core/constant/enum.dart';
 import 'package:kedai_ayam_nina/core/utils/rupiah_formatter.dart';
 import 'package:kedai_ayam_nina/core/widgets/card/card_gradient.dart';
 import 'package:kedai_ayam_nina/core/widgets/chip/custom_chip.dart';
+import 'package:kedai_ayam_nina/core/widgets/main_scaffold_admin.dart';
 import 'package:kedai_ayam_nina/features/transactions/domain/entities/transaction.dart';
 import 'package:kedai_ayam_nina/features/transactions/presentations/pages/widgets/card_history_item.dart';
-import 'package:kedai_ayam_nina/core/widgets/main_scaffold_admin.dart';
 
 class CardHistory extends StatelessWidget {
-  final List<Transaction> transaction;
   const CardHistory({super.key, required this.transaction});
+
+  final List<Transaction> transaction;
 
   @override
   Widget build(BuildContext context) {
+    final recentTransactions = transaction.take(5).toList();
+
+    final totalRecentExpenses = recentTransactions
+        .where((item) => item.jenis == JenisTransaksi.pengeluaran)
+        .fold<int>(0, (total, item) => total + item.nominal);
+
     return Column(
       spacing: 10,
       children: [
@@ -19,7 +27,7 @@ class CardHistory extends StatelessWidget {
           elevation: 16,
           color: Theme.of(context).colorScheme.onSecondary,
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8),
             child: Column(
               spacing: 10,
               children: [
@@ -27,27 +35,31 @@ class CardHistory extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Riwayat Transaksi",
+                      'Riwayat Transaksi',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     TextButton(
-                      onPressed: () =>
-                          AdminShellProvider.of(context).goBranch(0),
-                      child: const Text("Lihat Semua"),
+                      onPressed: () {
+                        AdminShellProvider.of(context).goBranch(0);
+                      },
+                      child: const Text('Lihat Semua'),
                     ),
                   ],
                 ),
                 ListView.builder(
                   shrinkWrap: true,
-                  itemCount: transaction.length > 5 ? 5 : transaction.length,
-                  itemBuilder: (context, index) => CardHistoryItem(
-                    isPengeluaran:
-                        transaction[index].jenis.name == 'pengeluaran',
-                    tittle: transaction[index].kategori.label,
-                    date:
-                        "${transaction[index].tanggal.day.toString().padLeft(2, '0')}/${transaction[index].tanggal.month.toString().padLeft(2, '0')}/${transaction[index].tanggal.year}",
-                    nominal: formatRupiah(transaction[index].nominal),
-                  ),
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: recentTransactions.length,
+                  itemBuilder: (context, index) {
+                    final item = recentTransactions[index];
+
+                    return CardHistoryItem(
+                      isPengeluaran: item.jenis == JenisTransaksi.pengeluaran,
+                      tittle: item.kategori.label,
+                      date: _formatDate(item.tanggal),
+                      nominal: formatRupiah(item.nominal),
+                    );
+                  },
                 ),
               ],
             ),
@@ -59,13 +71,13 @@ class CardHistory extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                "Total Keuangan",
+                'Total Pengeluaran',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSecondary,
                 ),
               ),
               Text(
-                "Total 5 Transaksi Terakhir:",
+                'Dari maksimal 5 transaksi terakhir:',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSecondary,
                 ),
@@ -73,18 +85,7 @@ class CardHistory extends StatelessWidget {
               Row(
                 children: [
                   CustomTrendChip(
-                    text: formatNumber(
-                      transaction
-                          .take(transaction.length > 5 ? 5 : transaction.length)
-                          .where(
-                            (element) => element.jenis.name == 'pengeluaran',
-                          )
-                          .fold(
-                            0,
-                            (previousValue, element) =>
-                                previousValue + element.nominal,
-                          ),
-                    ),
+                    text: formatNumber(totalRecentExpenses),
                     icon: Icons.trending_up,
                   ),
                 ],
@@ -94,5 +95,12 @@ class CardHistory extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+
+    return '$day/$month/${date.year}';
   }
 }
